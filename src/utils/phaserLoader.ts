@@ -1,7 +1,12 @@
+import 'p2';
+import 'pixi';
+import 'phaser';
+import '../main.css';
+
 import * as Phaser from 'phaser-ce';
 
 export interface PhaserArcadeGameClass<T extends PhaserArcadeGame> {
-  new (container: Element): T;
+  new(container: Element): T;
 }
 
 export abstract class PhaserArcadeGame extends Phaser.Game {
@@ -18,4 +23,8 @@ export abstract class PhaserArcadeGame extends Phaser.Game {
 
     super(width, height, Phaser.AUTO, container, null);
   }
+}
+
+export function initializeGame(gameClass: PhaserArcadeGameClass<any>) {
+  new gameClass(document.getElementById('app'));
 }

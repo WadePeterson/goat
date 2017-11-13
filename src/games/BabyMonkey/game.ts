@@ -1,15 +1,15 @@
-import { PhaserArcadeGame } from '../utils/phaserLoader';
+import { PhaserArcadeGame } from '../../utils/phaserLoader';
 import { LevelState } from './LevelState';
 import { Fonts, GameStates, Sprites, SoundFX, Music } from './constants';
 
-const walkingMonkeyImage = require('../../assets/sprites/walking-monkey.png');
-const pressStartPng = require('../../assets/fonts/press-start-2p/press-start-2p.png');
-const pressStartFnt = require('../../assets/fonts/press-start-2p/press-start-2p.fnt');
-const jumpSound = require('../../assets/audio/jump.wav');
-const song1 = require('../../assets/audio/song1.wav');
-const song2 = require('../../assets/audio/song2.wav');
-const deathSound = require('../../assets/audio/death.wav');
-const bananaSound = require('../../assets/audio/banana.wav');
+const walkingMonkeyImage = require('../../../assets/sprites/walking-monkey.png');
+const pressStartPng = require('../../../assets/fonts/press-start-2p/press-start-2p.png');
+const pressStartFnt = require('../../../assets/fonts/press-start-2p/press-start-2p.fnt');
+const jumpSound = require('../../../assets/audio/jump.wav');
+const song1 = require('../../../assets/audio/song1.wav');
+const song2 = require('../../../assets/audio/song2.wav');
+const deathSound = require('../../../assets/audio/death.wav');
+const bananaSound = require('../../../assets/audio/banana.wav');
 
 export default class BabyMonkeyGame extends PhaserArcadeGame {
   constructor(container: Element) {
