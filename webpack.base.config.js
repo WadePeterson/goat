@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const gameNames = ['BabyMonkey'];
+const gameNames = ['baby-monkey', 'flappy-bird-cat'];
 
 function getConfigForGame(gameName) {
   return {
@@ -10,7 +10,7 @@ function getConfigForGame(gameName) {
       [gameName]: path.join(__dirname, `src/games/${gameName}/index.ts`)
     },
     output: {
-      path: path.join(__dirname, 'dist', gameName),
+      path: path.join(__dirname, 'dist'),
       filename: '[name].[hash].js'
     },
     resolve: {
@@ -23,7 +23,7 @@ function getConfigForGame(gameName) {
       }
     },
     plugins: [
-      new HtmlWebpackPlugin({ template: path.join(__dirname, 'src/index.html') })
+      new HtmlWebpackPlugin({ filename: `${gameName}/index.html`, template: path.join(__dirname, 'src/index.html') })
     ],
     module: {
       rules: [
@@ -31,7 +31,7 @@ function getConfigForGame(gameName) {
         { test: /\.json$/, use: 'json-loader' },
         { test: /\.html$/, use: 'html-loader' },
         { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
-        { test: /assets(\/|\\)/, use: 'file-loader?name=assets/[hash].[ext]' },
+        { test: /(fonts|assets)(\/|\\)/, use: 'file-loader?name=assets/[hash].[ext]' },
         { test: /pixi\.js$/, use: 'expose-loader?PIXI' },
         { test: /phaser-split\.js$/, use: 'expose-loader?Phaser' },
         { test: /p2\.js$/, use: 'expose-loader?p2' }

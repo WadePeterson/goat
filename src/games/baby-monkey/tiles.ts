@@ -37,9 +37,9 @@ function tile(key: string, imgPath: string, addToLevel: string | AddToLevel): Ti
 }
 
 const tileMap: { [key: string]: TileConfig } = {
-  b: tile(Sprites.BANANA, require('../../../assets/sprites/tiles/banana.png'), TileTypes.BANANA),
-  s: tile(Sprites.GRASS, require('../../../assets/sprites/tiles/grass.png'), TileTypes.WALL),
-  g: tile(Sprites.GROUND1, require('../../../assets/sprites/tiles/ground1.png'), TileTypes.WALL),
+  b: tile(Sprites.BANANA, require('./assets/sprites/tiles/banana.png'), TileTypes.BANANA),
+  s: tile(Sprites.GRASS, require('./assets/sprites/tiles/grass.png'), TileTypes.WALL),
+  g: tile(Sprites.GROUND1, require('./assets/sprites/tiles/ground1.png'), TileTypes.WALL),
 };
 
 export function getTileConfig(tileKey: string) {
