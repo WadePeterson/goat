@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const gameNames = ['baby-monkey', 'flappy-bird-cat'];
+const gameNames = ['baby-monkey', 'flappy-bird-cat', 'goat'];
 
 const entry = {};
 const plugins = [];

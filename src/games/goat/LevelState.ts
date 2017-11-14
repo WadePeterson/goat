@@ -1,114 +1,9 @@
 import { getTileConfig } from './tiles';
+import { PauseMenu } from './components/PauseMenu';
 import { Player } from './Player';
 import { Fonts, GameStates, Sprites, SoundFX } from './constants';
-import { Actions, KeyMap } from './keyboard';
 import levels, { LevelConfig } from './levels';
-
-interface MenuItem {
-  action: () => void;
-  text: string;
-  item: Phaser.BitmapText;
-}
-
-export class PauseMenu {
-  game: Phaser.Game;
-  isOpen: boolean;
-  menuGroup: Phaser.Group;
-  levelState: LevelState;
-  menuItems: MenuItem[];
-  activeItemIndex: number;
-
-  constructor(game: Phaser.Game, levelState: LevelState) {
-    this.game = game;
-    this.levelState = levelState;
-    this.isOpen = false;
-  }
-
-  createMenu() {
-    this.menuGroup = this.game.add.group();
-
-    const graphics = this.game.add.graphics(0, 0, this.menuGroup);
-    graphics.beginFill(0x000000, 0.7);
-    graphics.drawRect(0, 0, this.game.width, this.game.height);
-    graphics.fixedToCamera = true;
-
-    this.menuItems = this.createMenuItems();
-    this.setActiveItem(0);
-  }
-
-  createMenuItems(): MenuItem[] {
-    const menuItemConfigs = [
-      { action: this.close, text: 'Resume Game' },
-      { action: this.restartLevel, text: 'Restart Level' },
-    ];
-
-    const menuItemHeight = 12;
-    const menuHeight = menuItemConfigs.length * menuItemHeight;
-    const menuTop = (this.game.height - menuHeight) / 2;
-
-    return menuItemConfigs.map((config, index) => {
-      const y = menuTop + index * menuItemHeight;
-      return Object.assign({}, config, { item: this.addMenuItem(config.text, y) });
-    });
-  }
-
-  setActiveItem(activeItemIndex: number) {
-    this.activeItemIndex = activeItemIndex;
-    this.menuItems.forEach((menuItem, index) => {
-      if (index === activeItemIndex) {
-        menuItem.item.alpha = 1;
-      } else {
-        menuItem.item.alpha = 0.6;
-      }
-    });
-  }
-
-  restartLevel() {
-    this.levelState.restart();
-  }
-
-  addMenuItem(text: string, y: number) {
-    return addFixedLabel(this.game, y, text, 8, 'center', 0, this.menuGroup);
-  }
-
-  toggle() {
-    this.setOpen(!this.isOpen);
-  }
-
-  open() {
-    this.setOpen(true);
-  }
-
-  close() {
-    this.setOpen(false);
-  }
-
-  private setOpen(open: boolean) {
-    this.isOpen = open;
-    this.levelState.pauseLevel(this.isOpen);
-
-    this.levelState.keys.reset(Actions.MenuDown);
-    this.levelState.keys.reset(Actions.MenuUp);
-    this.levelState.keys.reset(Actions.MenuSelect);
-
-    if (this.isOpen) {
-      this.createMenu();
-    } else if (this.menuGroup) {
-      this.menuGroup.destroy(true);
-      this.menuGroup = null;
-    }
-  }
-
-  update() {
-    if (this.levelState.keys.justDown(Actions.MenuUp) && this.activeItemIndex > 0) {
-      this.setActiveItem(this.activeItemIndex - 1);
-    } else if (this.levelState.keys.justDown(Actions.MenuDown) && this.activeItemIndex < this.menuItems.length - 1) {
-      this.setActiveItem(this.activeItemIndex + 1);
-    } else if (this.levelState.keys.justDown(Actions.MenuSelect)) {
-      this.menuItems[this.activeItemIndex].action.call(this);
-    }
-  }
-}
+import * as Utils from './utils';
 
 export class LevelState extends Phaser.State {
   game: Phaser.Game;
@@ -120,7 +15,7 @@ export class LevelState extends Phaser.State {
   header: GameHeaderText;
   levelIndex = 0;
   stats: LevelStats;
-  keys: KeyMap;
+  keys: Utils.Input.KeyMap;
   success: boolean;
   isPaused: boolean;
   pauseMenu: PauseMenu;
@@ -169,7 +64,7 @@ export class LevelState extends Phaser.State {
     this.bananaSound = this.game.add.audio(SoundFX.BANANA);
     this.deathSound = this.game.add.audio(SoundFX.DEATH);
 
-    this.keys = new KeyMap(this.game);
+    this.keys = new Utils.Input.KeyMap(this.game);
     this.pauseMenu = new PauseMenu(this.game, this);
 
     this.player = new Player(this.game, this.keys);
@@ -187,8 +82,8 @@ export class LevelState extends Phaser.State {
     this.backgroundMusic = this.game.add.audio(this.config.song);
     this.backgroundMusic.play();
 
-    fadeText(this.game, 0, 100, `Level ${this.levelIndex + 1}`, 16, 'center');
-    fadeText(this.game, 400, 120, this.config.name, 8, 'center');
+    Utils.Label.fadeText(this.game, 0, 100, `Level ${this.levelIndex + 1}`, 16, Utils.Label.TextAlign.Center);
+    Utils.Label.fadeText(this.game, 400, 120, this.config.name, 8, Utils.Label.TextAlign.Center);
   }
 
   private createMap() {
@@ -256,7 +151,7 @@ export class LevelState extends Phaser.State {
     ];
     this.pauseLevel(true);
     const text = successTextChoices[this.game.rnd.integerInRange(0, successTextChoices.length - 1)];
-    fadeText(this.game, 0, 104, text, 16, 'center').then(() => {
+    Utils.Label.fadeText(this.game, 0, 104, text, 16, Utils.Label.TextAlign.Center).then(() => {
       this.goToLevel(this.levelIndex + 1);
     });
   }
@@ -271,7 +166,7 @@ export class LevelState extends Phaser.State {
     ];
     this.pauseLevel(true);
     const text = failureTextChoices[this.game.rnd.integerInRange(0, failureTextChoices.length - 1)];
-    fadeText(this.game, 0, 104, text, 8, 'center').then(() => {
+    Utils.Label.fadeText(this.game, 0, 104, text, 8, Utils.Label.TextAlign.Center).then(() => {
       setTimeout(() => {
         this.restart();
       }, 500);
@@ -279,7 +174,7 @@ export class LevelState extends Phaser.State {
   }
 
   update() {
-    if (this.keys.justDown(Actions.OpenPauseMenu)) {
+    if (this.keys.justDown(Utils.Input.Actions.OpenPauseMenu)) {
       this.pauseMenu.toggle();
     }
 
@@ -305,9 +200,9 @@ export class LevelState extends Phaser.State {
       this.levelSuccess();
     }
 
-    if (this.keys.justDown(Actions.NextLevel)) {
+    if (this.keys.justDown(Utils.Input.Actions.NextLevel)) {
       this.goToLevel(this.levelIndex + 1);
-    } else if (this.keys.justDown(Actions.PrevLevel)) {
+    } else if (this.keys.justDown(Utils.Input.Actions.PrevLevel)) {
       this.goToLevel(this.levelIndex - 1);
     }
 
@@ -337,54 +232,10 @@ export class LevelState extends Phaser.State {
   }
 }
 
-type TextAlign = 'left' | 'center' | 'right';
-
-function addFixedLabel(game: Phaser.Game, y: number, text: string, size: number, align: TextAlign, marginX = 0, group?: Phaser.Group) {
-  const label = game.add.bitmapText(0, y, Fonts.PRESS_START, text, size, group);
-
-  if (align === 'left') {
-    label.x = marginX;
-  } else if (align === 'right') {
-    label.x = game.width - label.width - marginX;
-  } else {
-    label.x = (game.width - label.width) / 2;
-  }
-
-  label.x = Math.round(label.x);
-  label.fixedToCamera = true;
-
-  return label;
-}
-
-function fadeText(game: Phaser.Game, initialDelay: number, y: number, text: string, size: number, align: TextAlign, marginX = 0) {
-  const label = addFixedLabel(game, y, text, size, align, marginX);
-  label.alpha = 0;
-  const textDuration = 1000;
-  const fadeInDuration = 1000;
-  const fadeOutDuration = 500;
-
-  return new Promise(resolve => {
-    game.add.tween(label)
-      .to({ alpha: 1 }, fadeInDuration, Phaser.Easing.Linear.None, true, initialDelay, 0)
-      .onComplete.addOnce(() => {
-        game.add.tween(label)
-          .to({ alpha: 0 }, fadeOutDuration, Phaser.Easing.Linear.None, true, textDuration, 0)
-          .onComplete.add(() => {
-            label.destroy();
-            resolve();
-          });
-      });
-  });
-}
-
 interface LevelStats {
   bananasCollected: number;
   bananasTotal: number;
   score: number;
-}
-
-function leftPad(num: number) {
-  return num < 10 ? ' ' + num : '' + num;
 }
 
 export class GameHeaderText {
@@ -392,12 +243,12 @@ export class GameHeaderText {
   private bananaLabel: Phaser.BitmapText;
 
   constructor(game: Phaser.Game) {
-    this.scoreLabel = addFixedLabel(game, 2, 'Score:', 8, 'left', 2);
-    this.bananaLabel = addFixedLabel(game, 2, '00/00', 8, 'right', 2);
+    this.scoreLabel = Utils.Label.addFixedLabel(game, 2, 'Score:', 8, Utils.Label.TextAlign.Left, 2);
+    this.bananaLabel = Utils.Label.addFixedLabel(game, 2, '00/00', 8, Utils.Label.TextAlign.Right, 2);
   }
 
   update(stats: LevelStats) {
     this.scoreLabel.text = 'Score:' + stats.score;
-    this.bananaLabel.text = `${leftPad(stats.bananasCollected)}/${leftPad(stats.bananasTotal)}`;
+    this.bananaLabel.text = `${Utils.Label.leftPad(stats.bananasCollected)}/${Utils.Label.leftPad(stats.bananasTotal)}`;
   }
 }
