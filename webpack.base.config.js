@@ -8,10 +8,9 @@ const entry = {};
 const plugins = [];
 
 gameNames.forEach(gameName => {
-  const chunkName = `${gameName}/index`;
-  entry[chunkName] = path.join(__dirname, `src/games/${gameName}/index.ts`);
+  entry[gameName] = path.join(__dirname, `src/games/${gameName}/index.ts`);
   plugins.push(new HtmlWebpackPlugin({
-    chunks: [chunkName],
+    chunks: [gameName],
     filename: `${gameName}/index.html`,
     template: path.join(__dirname, 'src/index.html')
   }));
@@ -21,7 +20,7 @@ module.exports = {
   entry,
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: '[name].[chunkhash].js'
+    filename: '[name].[hash].js'
   },
   resolve: {
     extensions: ['.js', '.ts'],
