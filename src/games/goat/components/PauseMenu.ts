@@ -84,9 +84,9 @@ export class PauseMenu {
     this.isOpen = open;
     this.levelState.pauseLevel(this.isOpen);
 
-    this.levelState.keys.reset(Utils.Input.Actions.MenuDown);
-    this.levelState.keys.reset(Utils.Input.Actions.MenuUp);
-    this.levelState.keys.reset(Utils.Input.Actions.MenuSelect);
+    this.levelState.keys.reset(Utils.Input.Action.MenuDown);
+    this.levelState.keys.reset(Utils.Input.Action.MenuUp);
+    this.levelState.keys.reset(Utils.Input.Action.MenuSelect);
 
     if (this.isOpen) {
       this.createMenu();
@@ -97,11 +97,11 @@ export class PauseMenu {
   }
 
   update() {
-    if (this.levelState.keys.justDown(Utils.Input.Actions.MenuUp) && this.activeItemIndex > 0) {
+    if (this.levelState.keys.justDown(Utils.Input.Action.MenuUp) && this.activeItemIndex > 0) {
       this.setActiveItem(this.activeItemIndex - 1);
-    } else if (this.levelState.keys.justDown(Utils.Input.Actions.MenuDown) && this.activeItemIndex < this.menuItems.length - 1) {
+    } else if (this.levelState.keys.justDown(Utils.Input.Action.MenuDown) && this.activeItemIndex < this.menuItems.length - 1) {
       this.setActiveItem(this.activeItemIndex + 1);
-    } else if (this.levelState.keys.justDown(Utils.Input.Actions.MenuSelect)) {
+    } else if (this.levelState.keys.justDown(Utils.Input.Action.MenuSelect)) {
       this.menuItems[this.activeItemIndex].action.call(this);
     }
   }

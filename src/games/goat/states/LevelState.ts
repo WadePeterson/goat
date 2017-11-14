@@ -172,7 +172,7 @@ export class LevelState extends Phaser.State {
   }
 
   update() {
-    if (this.keys.justDown(Utils.Input.Actions.OpenPauseMenu)) {
+    if (this.keys.justDown(Utils.Input.Action.OpenPauseMenu)) {
       this.pauseMenu.toggle();
     }
 
@@ -196,12 +196,6 @@ export class LevelState extends Phaser.State {
 
     if (!this.success && this.isLevelComplete()) {
       this.levelSuccess();
-    }
-
-    if (this.keys.justDown(Utils.Input.Actions.NextLevel)) {
-      this.goToLevel(this.levelIndex + 1);
-    } else if (this.keys.justDown(Utils.Input.Actions.PrevLevel)) {
-      this.goToLevel(this.levelIndex - 1);
     }
 
     this.header.update(this.stats);
