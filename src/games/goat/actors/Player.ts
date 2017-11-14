@@ -1,4 +1,4 @@
-import * as Utils from './utils';
+import * as Utils from '../utils';
 
 class JumpState {
   private static NOT_JUMPING = 0;

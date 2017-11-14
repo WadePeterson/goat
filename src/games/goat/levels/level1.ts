@@ -1,5 +1,5 @@
 import { defineLevel } from './utils';
-import { Music } from '../constants';
+import { Music } from '../utils/assetUtils';
 export default defineLevel({
   name: 'Baby Monkey\'s Tree House',
   backgroundColor: '#29B6F6',

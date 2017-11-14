@@ -1,6 +1,6 @@
 import { PhaserArcadeGame } from '../../utils/phaserLoader';
-import { LevelState } from './LevelState';
-import { Fonts, GameStates, Sprites, SoundFX, Music } from './constants';
+import { LevelState } from './states/LevelState';
+import * as Utils from './utils';
 
 const walkingMonkeyImage = require('./assets/sprites/walking-monkey.png');
 const pressStartPng = require('../../../fonts/press-start-2p/press-start-2p.png');
@@ -14,21 +14,21 @@ const bananaSound = require('./assets/audio/banana.wav');
 export default class GoatGame extends PhaserArcadeGame {
   constructor(container: Element) {
     super(container);
-    this.state.add(GameStates.BOOT, BootState, true);
-    this.state.add(GameStates.GAME_LEVEL, LevelState, false);
+    this.state.add(Utils.State.GameStates.Boot, BootState, true);
+    this.state.add(Utils.State.GameStates.Dungeon, LevelState, false);
   }
 }
 
 export class BootState extends Phaser.State {
   preload() {
     this.load.crossOrigin = 'Anonymous';
-    this.load.spritesheet(Sprites.MONKEY, walkingMonkeyImage, 16, 16, 4);
-    this.load.bitmapFont(Fonts.PRESS_START, pressStartPng, pressStartFnt);
-    this.load.audio(SoundFX.JUMP, jumpSound);
-    this.load.audio(SoundFX.DEATH, deathSound);
-    this.load.audio(SoundFX.BANANA, bananaSound);
-    this.load.audio(Music.SONG1, song1);
-    this.load.audio(Music.SONG2, song2);
+    this.load.spritesheet(Utils.Assets.Sprites.MONKEY, walkingMonkeyImage, 16, 16, 4);
+    this.load.bitmapFont(Utils.Assets.Fonts.PRESS_START, pressStartPng, pressStartFnt);
+    this.load.audio(Utils.Assets.SoundFX.JUMP, jumpSound);
+    this.load.audio(Utils.Assets.SoundFX.DEATH, deathSound);
+    this.load.audio(Utils.Assets.SoundFX.BANANA, bananaSound);
+    this.load.audio(Utils.Assets.Music.SONG1, song1);
+    this.load.audio(Utils.Assets.Music.SONG2, song2);
 
     this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     this.game.scale.setGameSize(256, 224);
@@ -38,6 +38,6 @@ export class BootState extends Phaser.State {
   }
 
   create() {
-    this.game.state.start(GameStates.GAME_LEVEL, true, false);
+    this.game.state.start(Utils.State.GameStates.Dungeon, true, false);
   }
 }

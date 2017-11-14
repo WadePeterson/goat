@@ -1,4 +1,4 @@
-import { Fonts, GameStates, Sprites, SoundFX } from '../constants';
+import { Fonts, Sprites, SoundFX } from '../utils/assetUtils';
 
 export function leftPad(num: number) {
   return num < 10 ? ' ' + num : '' + num;

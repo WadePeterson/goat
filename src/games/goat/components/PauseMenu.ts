@@ -1,4 +1,4 @@
-import { LevelState } from '../LevelState';
+import { LevelState } from '../states/LevelState';
 import * as Utils from '../utils';
 
 interface MenuItem {

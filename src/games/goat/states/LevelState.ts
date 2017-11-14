@@ -1,9 +1,7 @@
-import { getTileConfig } from './tiles';
-import { PauseMenu } from './components/PauseMenu';
-import { Player } from './Player';
-import { Fonts, GameStates, Sprites, SoundFX } from './constants';
-import levels, { LevelConfig } from './levels';
-import * as Utils from './utils';
+import { PauseMenu } from '../components/PauseMenu';
+import { Player } from '../actors/Player';
+import levels, { LevelConfig } from '../levels';
+import * as Utils from '../utils';
 
 export class LevelState extends Phaser.State {
   game: Phaser.Game;
@@ -37,7 +35,7 @@ export class LevelState extends Phaser.State {
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
         const tileChar = this.config.tileData[row][col];
-        const tileConfig = getTileConfig(tileChar);
+        const tileConfig = Utils.Assets.getTileConfig(tileChar);
 
         if (!tileConfig) {
           continue;
@@ -61,8 +59,8 @@ export class LevelState extends Phaser.State {
     this.game.world.setBounds(0, 0, this.config.tileData[0].length * 16, this.config.tileData.length * 16);
     this.game.world.enableBody = true;
     this.game.stage.smoothed = false;
-    this.bananaSound = this.game.add.audio(SoundFX.BANANA);
-    this.deathSound = this.game.add.audio(SoundFX.DEATH);
+    this.bananaSound = this.game.add.audio(Utils.Assets.SoundFX.BANANA);
+    this.deathSound = this.game.add.audio(Utils.Assets.SoundFX.DEATH);
 
     this.keys = new Utils.Input.KeyMap(this.game);
     this.pauseMenu = new PauseMenu(this.game, this);
@@ -93,7 +91,7 @@ export class LevelState extends Phaser.State {
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
         const tileChar = this.config.tileData[row][col];
-        const tileConfig = getTileConfig(tileChar);
+        const tileConfig = Utils.Assets.getTileConfig(tileChar);
 
         if (!tileConfig) {
           continue;
@@ -101,7 +99,7 @@ export class LevelState extends Phaser.State {
 
         const tileKey = tileConfig.key;
 
-        if (tileKey === Sprites.BANANA) {
+        if (tileKey === Utils.Assets.Sprites.BANANA) {
           this.stats.bananasTotal++;
         }
 
@@ -211,7 +209,7 @@ export class LevelState extends Phaser.State {
 
   goToLevel(index: number) {
     this.levelIndex = index % levels.length;
-    this.game.state.start(GameStates.GAME_LEVEL);
+    this.game.state.start(Utils.State.GameStates.Dungeon);
   }
 
   private eatBanana(player: Phaser.Sprite, banana: Phaser.Sprite) {

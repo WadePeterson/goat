@@ -1,5 +1,5 @@
 import { defineLevel } from './utils';
-import { Music } from '../constants';
+import { Music } from '../utils/assetUtils';
 export default defineLevel({
   name: 'The Journey Begins',
   backgroundColor: '#29B6F6',
