@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "target": "es6",
-    "sourceMap": true
+    "sourceMap": true,
+    "strict": true
   },
   "exclude": [
     "dist",

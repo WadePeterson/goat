@@ -18,6 +18,7 @@
     "quotemark": [true, "single"],
     "trailing-comma": [false],
     "variable-name": [false],
-    "prefer-for-of": false
+    "prefer-for-of": false,
+    "array-type": false
   }
 }
