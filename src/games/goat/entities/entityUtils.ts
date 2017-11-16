@@ -1,4 +1,4 @@
-import { Component, ComponentType } from '../components';
+import { Component, ComponentFunction } from '../components';
 
 let idCounter = 0;
 
@@ -13,8 +13,8 @@ function generateId() {
 }
 
 export class Entity {
-  private _components: Component<any>[];
-  private _componentsByType: { [type: string]: Component<any> };
+  private _components: Component[];
+  private _componentsByType: { [type: string]: Component };
 
   readonly id: string;
 
@@ -23,13 +23,13 @@ export class Entity {
     this._components = [];
   }
 
-  addComponent(component: Component<any>) {
+  addComponent(component: Component) {
     this._components.push(component);
     this._componentsByType[component.type] = component;
     return this;
   }
 
-  removeComponent(componentType: ComponentType) {
+  removeComponent(componentType: string) {
     const componentConfig = this._componentsByType[componentType];
     if (componentConfig) {
       delete this._componentsByType[componentType];
@@ -38,11 +38,8 @@ export class Entity {
     }
   }
 
-  getComponent<T extends ComponentType>(componentType: T): Component<T> | null {
-    return this._componentsByType[componentType] || null;
-  }
-
-  hasComponent(componentType: ComponentType) {
-    return !!this.getComponent(componentType);
+  getComponent<C extends string, T>(componentFn: ComponentFunction<C, T>): Component<C, T> | null {
+    const component = this._componentsByType[componentFn.type];
+    return component ? component as Component<C, T> : null;
   }
 }

@@ -19,6 +19,7 @@
     "trailing-comma": [false],
     "variable-name": [false],
     "prefer-for-of": false,
-    "array-type": false
+    "array-type": false,
+    "no-empty-interface": false
   }
 }

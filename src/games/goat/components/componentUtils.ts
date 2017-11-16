@@ -1,25 +1,33 @@
-function defineComponent<TData = null>(): TData {
-  return null as any;
+export type Component<C extends string = string, T = {}> = { type: C } & T;
+
+type ComponentFunctionNoArgs<C extends string> = { type: C } & (() => Component<C>);
+export type ComponentFunction<C extends string, T> = { type: C } & ((data: T) => Component<C, T>);
+
+type ComponentBuilderNoArgs = <C extends string>(type: C) => ComponentFunctionNoArgs<C>;
+type ComponentBuilder<T> = <C extends string>(type: C) => ComponentFunction<C, T>;
+
+function component(): ComponentBuilderNoArgs;
+function component<T>(defaultValue?: T): ComponentBuilder<T>;
+function component<T>(defaultValue?: T): ComponentBuilder<T> {
+  return (type: string): any => {
+    const fn = (data: any): any => {
+      return Object.assign({ type }, defaultValue, data);
+    };
+    return Object.assign(fn, { type });
+  };
 }
 
-const componentDataTypes = {
-  Position: defineComponent<{ x: number; y: number }>(),
-  Velocity: defineComponent<{ x: number; y: number }>(),
-  Sprite: defineComponent<{ path: string }>(),
-  Player: defineComponent(),
-  Health: defineComponent<{ current: number; max: number }>()
-};
+export interface Position { x: number; y: number; }
+export const Position = component<Position>()('position');
 
-export type ComponentType = keyof typeof componentDataTypes;
-export interface Component<T extends ComponentType> { type: T; }
+export interface Velocity { x: number; y: number; }
+export const Velocity = component<Velocity>()('velocity');
 
-type ComponentMap = typeof componentDataTypes;
-function generateComponentFunctions(map: ComponentMap): { [P in keyof ComponentMap]: Component<P> & ((data?: ComponentMap[P]) => Component<P> & ComponentMap[P] ) } {
-  return Object.keys(map).reduce((acc, type) => {
-    const fn: any = (data: null) => Object.assign({ type }, data);
-    Object.assign(fn, { type });
-    return Object.assign(acc, { [type]: (map as any)[type] });
-  }, {}) as any;
-}
+export interface Player {}
+export const Player = component<Player>()('player');
 
-export const Components = generateComponentFunctions(componentDataTypes);
+export interface Sprite { path: string; }
+export const Sprite = component<Sprite>()('sprite');
+
+export interface Health { current: number; max: number; }
+export const Health = component<Health>()('health');

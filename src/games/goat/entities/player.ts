@@ -1,9 +1,9 @@
 import { Entity } from './entityUtils';
-import { Components } from '../components';
+import * as Components from '../components';
 
 export function createPlayer(): Entity {
-  return new Entity()
-    .addComponent(Components.Position({ x: 1, y: 1 }));
+  const player = new Entity().addComponent(Components.Position({ x: 1, y: 1 }));
+  return player;
 }
 
 import * as Utils from '../utils';
