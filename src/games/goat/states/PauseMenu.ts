@@ -10,7 +10,7 @@ interface MenuItem {
 export class PauseMenu {
   game: Phaser.Game;
   isOpen: boolean;
-  menuGroup: Phaser.Group;
+  menuGroup: Phaser.Group | undefined;
   levelState: LevelState;
   menuItems: MenuItem[];
   activeItemIndex: number;
@@ -92,7 +92,7 @@ export class PauseMenu {
       this.createMenu();
     } else if (this.menuGroup) {
       this.menuGroup.destroy(true);
-      this.menuGroup = null;
+      this.menuGroup = undefined;
     }
   }
 

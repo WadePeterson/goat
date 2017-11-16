@@ -26,5 +26,5 @@ export abstract class PhaserArcadeGame extends Phaser.Game {
 }
 
 export function initializeGame(gameClass: PhaserArcadeGameClass<any>) {
-  new gameClass(document.getElementById('app'));
+  new gameClass(document.getElementById('app') as Element);
 }

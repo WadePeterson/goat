@@ -1,38 +1,32 @@
-interface Action {
-  value: string;
-  _isAction: true;
+export enum Action {
+  Attack = 'attack',
+  MenuDown = 'menudown',
+  MenuSelect = 'menuselect',
+  MenuUp = 'menuup',
+  MoveLeft = 'moveleft',
+  MoveRight = 'moveright',
+  MoveUp = 'moveup',
+  MoveDown = 'movedown',
+  OpenPauseMenu = 'openmenu'
 }
-
-function defineAction(value: string): Action {
-  return { _isAction: true, value };
-}
-
-export const Actions = {
-  Jump: defineAction('jump'),
-  MenuDown: defineAction('menudown'),
-  MenuSelect: defineAction('menuselect'),
-  MenuUp: defineAction('menuup'),
-  MoveLeft: defineAction('moveleft'),
-  MoveRight: defineAction('moveright'),
-  NextLevel: defineAction('nextlevel'),
-  OpenPauseMenu: defineAction('openmenu'),
-  PrevLevel: defineAction('prevlevel'),
-};
 
 interface ActionKeyCodeMap {
   [key: string]: number[];
 }
 
 export const defaultActionKeyMap: ActionKeyCodeMap = {
-  [Actions.MenuDown.value]: [Phaser.KeyCode.DOWN, Phaser.KeyCode.S],
-  [Actions.MenuUp.value]: [Phaser.KeyCode.UP, Phaser.KeyCode.W],
-  [Actions.Jump.value]: [Phaser.KeyCode.SPACEBAR, Phaser.KeyCode.UP, Phaser.KeyCode.W],
-  [Actions.MoveLeft.value]: [Phaser.KeyCode.LEFT, Phaser.KeyCode.A],
-  [Actions.MoveRight.value]: [Phaser.KeyCode.RIGHT, Phaser.KeyCode.D],
-  [Actions.NextLevel.value]: [Phaser.KeyCode.EQUALS],
-  [Actions.PrevLevel.value]: [Phaser.KeyCode.MINUS],
-  [Actions.OpenPauseMenu.value]: [Phaser.KeyCode.ESC],
-  [Actions.MenuSelect.value]: [Phaser.KeyCode.ENTER, Phaser.KeyCode.SPACEBAR],
+  // Menus
+  [Action.OpenPauseMenu]: [Phaser.KeyCode.ESC],
+  [Action.MenuUp]: [Phaser.KeyCode.UP, Phaser.KeyCode.W],
+  [Action.MenuDown]: [Phaser.KeyCode.DOWN, Phaser.KeyCode.S],
+  [Action.MenuSelect]: [Phaser.KeyCode.ENTER, Phaser.KeyCode.SPACEBAR],
+
+  // Player
+  [Action.Attack]: [Phaser.KeyCode.SPACEBAR],
+  [Action.MoveUp]: [Phaser.KeyCode.UP, Phaser.KeyCode.W],
+  [Action.MoveDown]: [Phaser.KeyCode.DOWN, Phaser.KeyCode.S],
+  [Action.MoveLeft]: [Phaser.KeyCode.LEFT, Phaser.KeyCode.A],
+  [Action.MoveRight]: [Phaser.KeyCode.RIGHT, Phaser.KeyCode.D]
 };
 
 interface ActionKeyMap {
@@ -53,7 +47,7 @@ export class KeyMap {
   }
 
   private getKeys(action: Action) {
-    return this.actionMap[action.value];
+    return this.actionMap[action];
   }
 
   isDown(action: Action) {

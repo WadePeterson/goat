@@ -22,4 +22,4 @@ function generateComponentFunctions(map: ComponentMap): { [P in keyof ComponentM
   }, {}) as any;
 }
 
-export default generateComponentFunctions(componentDataTypes);
+export const Components = generateComponentFunctions(componentDataTypes);

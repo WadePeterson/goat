@@ -1,7 +1,8 @@
-import { PauseMenu } from '../components/PauseMenu';
-import { Player } from '../actors/Player';
+import { PauseMenu } from './PauseMenu';
+import { Player } from '../entities/player';
 import levels, { LevelConfig } from '../levels';
 import * as Utils from '../utils';
+import { GameStates } from './stateUtils';
 
 export class LevelState extends Phaser.State {
   game: Phaser.Game;
@@ -53,8 +54,6 @@ export class LevelState extends Phaser.State {
   create() {
     this.game.stage.backgroundColor = this.config.backgroundColor;
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
-    this.game.physics.arcade.checkCollision.down = false;
-    this.game.physics.arcade.checkCollision.up = false;
 
     this.game.world.setBounds(0, 0, this.config.tileData[0].length * 16, this.config.tileData.length * 16);
     this.game.world.enableBody = true;
@@ -185,8 +184,8 @@ export class LevelState extends Phaser.State {
     }
 
     this.game.physics.arcade.collide(this.player.sprite, this.walls);
-    this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, null, this);
-    this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, null, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, undefined, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, undefined, this);
 
     this.player.update();
 
@@ -203,10 +202,10 @@ export class LevelState extends Phaser.State {
 
   goToLevel(index: number) {
     this.levelIndex = index % levels.length;
-    this.game.state.start(Utils.State.GameStates.Dungeon);
+    this.game.state.start(GameStates.Dungeon);
   }
 
-  private eatBanana(player: Phaser.Sprite, banana: Phaser.Sprite) {
+  private eatBanana(__player: Phaser.Sprite, banana: Phaser.Sprite) {
     banana.kill();
     this.bananaSound.play();
     this.stats.bananasCollected++;

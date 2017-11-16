@@ -27,7 +27,8 @@ export default class FlappyBirdCatGame extends PhaserArcadeGame {
     super(container);
 
     try {
-      this.highScore = JSON.parse(localStorage.getItem('flappyBirdCatHighScore'));
+      const score = localStorage.getItem('flappyBirdCatHighScore');
+      this.highScore = score ? JSON.parse(score) : 0;
     } catch (e) {}
 
     this.highScore = this.highScore || 0;
@@ -136,7 +137,7 @@ export class MainEngineState extends Phaser.State {
     if (this.player.body.y >= this.game.world.height || this.player.body.y <= 0) {
       this.restart();
     }
-    this.game.physics.arcade.overlap(this.player.sprite, this.pipes, this.restart, null, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.pipes, this.restart, undefined, this);
     this.background.tilePosition.x -= 2;
   }
 

@@ -1,5 +1,6 @@
 import { PhaserArcadeGame } from '../../utils/phaserLoader';
 import { LevelState } from './states/LevelState';
+import { GameStates } from './states/stateUtils';
 import * as Utils from './utils';
 
 const walkingMonkeyImage = require('./assets/sprites/walking-monkey.png');
@@ -14,8 +15,8 @@ const bananaSound = require('./assets/audio/banana.wav');
 export default class GoatGame extends PhaserArcadeGame {
   constructor(container: Element) {
     super(container);
-    this.state.add(Utils.State.GameStates.Boot, BootState, true);
-    this.state.add(Utils.State.GameStates.Dungeon, LevelState, false);
+    this.state.add(GameStates.Boot, BootState, true);
+    this.state.add(GameStates.Dungeon, LevelState, false);
   }
 }
 
@@ -38,6 +39,6 @@ export class BootState extends Phaser.State {
   }
 
   create() {
-    this.game.state.start(Utils.State.GameStates.Dungeon, true, false);
+    this.game.state.start(GameStates.Dungeon, true, false);
   }
 }

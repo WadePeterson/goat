@@ -13,7 +13,7 @@ interface MenuItem {
 export class PauseMenu {
   game: Phaser.Game;
   isOpen: boolean;
-  menuGroup: Phaser.Group;
+  menuGroup?: Phaser.Group;
   levelState: LevelState;
   menuItems: MenuItem[];
   activeItemIndex: number;
@@ -95,7 +95,7 @@ export class PauseMenu {
       this.createMenu();
     } else if (this.menuGroup) {
       this.menuGroup.destroy(true);
-      this.menuGroup = null;
+      this.menuGroup = undefined;
     }
   }
 
@@ -292,8 +292,8 @@ export class LevelState extends Phaser.State {
     }
 
     this.game.physics.arcade.collide(this.player.sprite, this.walls);
-    this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, null, this);
-    this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, null, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, undefined, this);
+    this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, undefined, this);
 
     this.player.update();
 
@@ -319,7 +319,7 @@ export class LevelState extends Phaser.State {
     this.game.state.start(GameStates.GAME_LEVEL);
   }
 
-  private eatBanana(player: Phaser.Sprite, banana: Phaser.Sprite) {
+  private eatBanana(__player: Phaser.Sprite, banana: Phaser.Sprite) {
     banana.kill();
     this.bananaSound.play();
     this.stats.bananasCollected++;
