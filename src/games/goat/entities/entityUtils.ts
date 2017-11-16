@@ -14,13 +14,38 @@ function generateId() {
 
 export class Entity {
   private _components: Component[];
-  private _componentsByType: { [type: string]: Component };
+  private _componentsByType: { [type: string]: Component } = {};
 
   readonly id: string;
 
   constructor() {
     this.id = generateId();
     this._components = [];
+  }
+
+  static getEntitiesWithComponents<T1, T2>(entities: Entity[], [c1, c2]: [ComponentFunction<T1>, ComponentFunction<T2>]): Array<{ entity: Entity; components: [T1, T2] }>;
+  static getEntitiesWithComponents<T1, T2, T3>(entities: Entity[], [c1, c2, c3]: [ComponentFunction<T1>, ComponentFunction<T2>, ComponentFunction<T3>]): Array<{ entity: Entity; components: [T1, T2, T3] }>;
+  static getEntitiesWithComponents<T1, T2, T3, T4>(entities: Entity[], [c1, c2, c3, c4]: [ComponentFunction<T1>, ComponentFunction<T2>, ComponentFunction<T3>, ComponentFunction<T4>]): Array<{ entity: Entity; components: [T1, T2, T3, T4] }>;
+  static getEntitiesWithComponents(entities: Entity[], compFns: ComponentFunction<any>[]): any {
+    const results = [];
+
+    for (const entity of entities) {
+      let components: any[] | null = [];
+      for (const compFn of compFns) {
+        const component = entity.getComponent(compFn);
+        if (!component) {
+          components = null;
+          break;
+        }
+        components.push(compFn);
+      }
+
+      if (components) {
+        results.push({ entity, components });
+      }
+    }
+
+    return results;
   }
 
   addComponent(component: Component) {
@@ -38,8 +63,8 @@ export class Entity {
     }
   }
 
-  getComponent<C extends string, T>(componentFn: ComponentFunction<C, T>): Component<C, T> | null {
+  getComponent<T>(componentFn: ComponentFunction<T>): Component<T> | null {
     const component = this._componentsByType[componentFn.type];
-    return component ? component as Component<C, T> : null;
+    return component ? component as Component<T> : null;
   }
 }

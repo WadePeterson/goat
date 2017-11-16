@@ -1,5 +1,3 @@
-import { LevelState } from '../states/LevelState';
-
 export const Fonts = {
   PRESS_START: 'press_start',
 };
@@ -22,45 +20,19 @@ export const Sprites = {
   MONKEY: 'monkey',
 };
 
-type AddToLevel = (level: LevelState, sprite: Phaser.Sprite) => void;
-
 interface TileConfig {
   key: string;
   imgPath: string;
-  addToLevel: AddToLevel;
 }
 
-const TileTypes = {
-  BANANA: 'banana',
-  WALL: 'wall',
-};
-
-const defaultTileTypeBehavior: { [key: string]: AddToLevel } = {
-  [TileTypes.BANANA]: (level, sprite) => level.bananas.add(sprite),
-  [TileTypes.WALL]: (level, sprite) => {
-    level.walls.add(sprite);
-    sprite.body.immovable = true;
-  },
-};
-
-function tile(key: string, imgPath: string, addToLevel: string | AddToLevel): TileConfig {
-  if (typeof addToLevel === 'string') {
-    const tileType = addToLevel;
-
-    addToLevel = defaultTileTypeBehavior[tileType];
-
-    if (!addToLevel) {
-      throw new Error('no default behavior for TileType: ' + tileType);
-    }
-  }
-
-  return { key, imgPath, addToLevel };
+function tile(key: string, imgPath: string): TileConfig {
+  return { key, imgPath };
 }
 
 const tileMap: { [key: string]: TileConfig } = {
-  b: tile(Sprites.BANANA, require('../assets/sprites/tiles/banana.png'), TileTypes.BANANA),
-  s: tile(Sprites.GRASS, require('../assets/sprites/tiles/grass.png'), TileTypes.WALL),
-  g: tile(Sprites.GROUND1, require('../assets/sprites/tiles/ground1.png'), TileTypes.WALL),
+  b: tile(Sprites.BANANA, require('../assets/sprites/tiles/banana.png')),
+  s: tile(Sprites.GRASS, require('../assets/sprites/tiles/grass.png')),
+  g: tile(Sprites.GROUND1, require('../assets/sprites/tiles/ground1.png')),
 };
 
 export function getTileConfig(tileKey: string) {

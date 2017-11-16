@@ -1,54 +1,28 @@
 import { PauseMenu } from './PauseMenu';
-import { Player } from '../entities/player';
+import { createPlayer } from '../entities/player';
 import levels, { LevelConfig } from '../levels';
+import * as Components from '../components';
 import * as Utils from '../utils';
-import { GameStates } from './stateUtils';
+import { GameStates, preloadLevel } from './stateUtils';
+import { Entity } from '../entities';
+import RenderSystem from '../systems/renderSystem';
 
 export class LevelState extends Phaser.State {
   game: Phaser.Game;
   config: LevelConfig;
-  walls: Phaser.Group;
-  bananas: Phaser.Group;
-  enemies: Phaser.Group;
-  player: Player;
   header: GameHeaderText;
   levelIndex = 0;
   stats: LevelStats;
-  keys: Utils.Input.KeyMap;
   success: boolean;
   isPaused: boolean;
   pauseMenu: PauseMenu;
-  backgroundMusic: Phaser.Sound;
-  bananaSound: Phaser.Sound;
-  deathSound: Phaser.Sound;
+  keys: Utils.Input.KeyMap;
+  entities: Entity[];
+  renderSystem: RenderSystem;
 
   preload() {
     this.config = levels[this.levelIndex];
-    this.walls = this.add.group();
-    this.bananas = this.add.group();
-    this.enemies = this.add.group();
-    this.loadTiles();
-  }
-
-  private loadTiles() {
-    const loadedTiles: { [key: string]: boolean } = {};
-
-    for (let row = 0; row < this.config.tileData.length; row++) {
-      for (let col = 0; col < this.config.tileData[row].length; col++) {
-        const tileChar = this.config.tileData[row][col];
-        const tileConfig = Utils.Assets.getTileConfig(tileChar);
-
-        if (!tileConfig) {
-          continue;
-        }
-
-        const tileKey = tileConfig.key;
-        if (!loadedTiles[tileKey]) {
-          this.game.load.image(tileKey, tileConfig.imgPath);
-          loadedTiles[tileKey] = true;
-        }
-      }
-    }
+    preloadLevel(this.game, this.config);
   }
 
   create() {
@@ -58,29 +32,19 @@ export class LevelState extends Phaser.State {
     this.game.world.setBounds(0, 0, this.config.tileData[0].length * 16, this.config.tileData.length * 16);
     this.game.world.enableBody = true;
     this.game.stage.smoothed = false;
-    this.bananaSound = this.game.add.audio(Utils.Assets.SoundFX.BANANA);
-    this.deathSound = this.game.add.audio(Utils.Assets.SoundFX.DEATH);
 
     this.keys = new Utils.Input.KeyMap(this.game);
     this.pauseMenu = new PauseMenu(this.game, this);
 
-    this.player = new Player(this.game, this.keys);
-    this.player.sprite.position.x = this.config.startX * 16;
-    this.player.sprite.position.y = this.config.startY * 16;
+    const player = createPlayer(this.config.startX * 16, this.config.startY * 16);
+    this.entities = [player];
+
     this.header = new GameHeaderText(this.game);
 
     this.createMap();
     this.pauseLevel(false);
 
-    if (this.backgroundMusic) {
-      this.backgroundMusic.destroy();
-    }
-
-    this.backgroundMusic = this.game.add.audio(this.config.song);
-    this.backgroundMusic.play();
-
-    Utils.Label.fadeText(this.game, 0, 100, `Level ${this.levelIndex + 1}`, 16, Utils.Label.TextAlign.Center);
-    Utils.Label.fadeText(this.game, 400, 120, this.config.name, 8, Utils.Label.TextAlign.Center);
+    this.renderSystem = new RenderSystem(this.game);
   }
 
   private createMap() {
@@ -102,10 +66,9 @@ export class LevelState extends Phaser.State {
           this.stats.bananasTotal++;
         }
 
-        const x = col * 16;
-        const y = row * 16;
-        const sprite = this.game.add.sprite(x, y, tileKey);
-        tileConfig.addToLevel(this, sprite);
+        this.entities.push(new Entity()
+          .addComponent(Components.Sprite({ key: tileKey }))
+          .addComponent(Components.Position({ x: col * 16, y: row * 16 })));
       }
     }
   }
@@ -115,17 +78,8 @@ export class LevelState extends Phaser.State {
   }
 
   pauseLevel(paused: boolean) {
-    if (this.backgroundMusic) {
-      if (paused) {
-        this.backgroundMusic.pause();
-      } else {
-        this.backgroundMusic.resume();
-      }
-    }
-
     this.game.physics.arcade.isPaused = paused;
     this.isPaused = paused;
-    this.player.sprite.animations.paused = paused;
   }
 
   showPauseMenu() {
@@ -154,8 +108,6 @@ export class LevelState extends Phaser.State {
   }
 
   die() {
-    this.backgroundMusic.stop();
-    this.deathSound.play();
     const failureTextChoices = [
       'Oh poop',
       'You made baby monkey sad :(',
@@ -183,33 +135,28 @@ export class LevelState extends Phaser.State {
       return;
     }
 
-    this.game.physics.arcade.collide(this.player.sprite, this.walls);
-    this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, undefined, this);
-    this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, undefined, this);
+    this.renderSystem.update(this.entities);
 
-    this.player.update();
+    // this.game.physics.arcade.collide(this.player.sprite, this.walls);
+    // this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, undefined, this);
+    // this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, undefined, this);
 
-    if (this.player.body.position.y > this.world.height) {
-      this.die();
-    }
+    // this.player.update();
 
-    if (!this.success && this.isLevelComplete()) {
-      this.levelSuccess();
-    }
+    // if (this.player.body.position.y > this.world.height) {
+    //   this.die();
+    // }
 
-    this.header.update(this.stats);
+    // if (!this.success && this.isLevelComplete()) {
+    //   this.levelSuccess();
+    // }
+
+    // this.header.update(this.stats);
   }
 
   goToLevel(index: number) {
     this.levelIndex = index % levels.length;
     this.game.state.start(GameStates.Dungeon);
-  }
-
-  private eatBanana(__player: Phaser.Sprite, banana: Phaser.Sprite) {
-    banana.kill();
-    this.bananaSound.play();
-    this.stats.bananasCollected++;
-    this.stats.score += 10;
   }
 
   restart() {

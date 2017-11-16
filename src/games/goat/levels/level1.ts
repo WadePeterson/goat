@@ -7,7 +7,7 @@ export default defineLevel({
   startX: 3,
   startY: 12,
   tileData: [
-    '     b          ',
+    'gggggggggggggggg',
     '                ',
     '                ',
     '          s     ',

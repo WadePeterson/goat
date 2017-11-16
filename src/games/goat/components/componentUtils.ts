@@ -1,33 +1,29 @@
-export type Component<C extends string = string, T = {}> = { type: C } & T;
-
-type ComponentFunctionNoArgs<C extends string> = { type: C } & (() => Component<C>);
-export type ComponentFunction<C extends string, T> = { type: C } & ((data: T) => Component<C, T>);
-
-type ComponentBuilderNoArgs = <C extends string>(type: C) => ComponentFunctionNoArgs<C>;
-type ComponentBuilder<T> = <C extends string>(type: C) => ComponentFunction<C, T>;
-
-function component(): ComponentBuilderNoArgs;
-function component<T>(defaultValue?: T): ComponentBuilder<T>;
-function component<T>(defaultValue?: T): ComponentBuilder<T> {
-  return (type: string): any => {
-    const fn = (data: any): any => {
-      return Object.assign({ type }, defaultValue, data);
-    };
-    return Object.assign(fn, { type });
-  };
+export interface Component<T = {}> {
+  type: string;
+  data: T;
 }
 
-export interface Position { x: number; y: number; }
-export const Position = component<Position>()('position');
+export type ComponentFunction<T> = { type: string } & ((data: T) => Component<T>);
+type PartialComponentFunction<T> = { type: string } & ((data: Partial<T>) => Component<T>);
+type ComponentInitalizer<T, T2> = (data: T2) => T;
 
-export interface Velocity { x: number; y: number; }
-export const Velocity = component<Velocity>()('velocity');
+function component<T>(type: string): ComponentFunction<T>;
+function component<T, T2>(type: string, initializer: ComponentInitalizer<T, T2>): PartialComponentFunction<T>;
+function component<T, T2>(type: string, initializer?: ComponentInitalizer<T, T2>) {
+  const fn = (data: any) => {
+    if (initializer) {
+      data = initializer(data);
+    }
+    return { type, data };
+  };
 
-export interface Player {}
-export const Player = component<Player>()('player');
+  return Object.assign(fn, { type });
+}
 
-export interface Sprite { path: string; }
-export const Sprite = component<Sprite>()('sprite');
-
-export interface Health { current: number; max: number; }
-export const Health = component<Health>()('health');
+export const Position = component<{ x: number; y: number; }>('position');
+export const Velocity = component<{ x: number; y: number; }>('velocity');
+export const Player = component('player');
+export const Sprite = component<{ key: string; }>('sprite');
+export const Health = component('health', (data: { current?: number; max: number }) => {
+  return { current: data.current || data.max, max: data.max };
+});
