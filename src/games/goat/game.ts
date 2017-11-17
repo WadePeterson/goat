@@ -15,11 +15,11 @@ export class MainState extends Phaser.State {
   config: LevelConfig;
   header: GameHeaderText;
   levelIndex = 0;
-  stats: LevelStats;
   success: boolean;
   isPaused: boolean;
   pauseMenu: PauseMenu;
 
+  playerId: string;
   keys: Utils.Input.KeyMap;
   onEntityAdded: Phaser.Signal;
   entities: EntityMap;
@@ -29,8 +29,6 @@ export class MainState extends Phaser.State {
   preload() {
     this.config = levels[this.levelIndex];
     const loadedTiles: { [key: string]: boolean } = {};
-
-    this.game.load.image(Utils.Assets.Sprites.BANANA, Utils.Assets.getTileConfig('b').imgPath);
 
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
@@ -66,41 +64,18 @@ export class MainState extends Phaser.State {
       new Systems.Collision(this)
     ];
 
-    this.addEntity(new Entity().addComponents([
+    const player = new Entity().addComponents([
       Components.PlayerControllable(),
       Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
       Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }),
       Components.Velocity(),
       Components.Health({ max: 100 }),
       Components.Sprite({ key: Utils.Assets.Sprites.MONKEY })
-    ]));
+    ]);
 
-    this.addEntity(new Entity().addComponents([
-      Components.AIControllable(),
-      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
-      Components.Position({ x: this.config.startX * 16 + 40, y: this.config.startY * 16 + 40 }),
-      Components.Velocity({ maxSpeed: 60 }),
-      Components.Health({ max: 100 }),
-      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
-    ]));
+    this.playerId = player.id;
 
-    this.addEntity(new Entity().addComponents([
-      Components.AIControllable(),
-      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
-      Components.Position({ x: this.config.startX * 16 + 90, y: this.config.startY * 16 + 40 }),
-      Components.Velocity({ maxSpeed: 60 }),
-      Components.Health({ max: 100 }),
-      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
-    ]));
-
-    this.addEntity(new Entity().addComponents([
-      Components.AIControllable(),
-      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
-      Components.Position({ x: this.config.startX * 16 + 140, y: this.config.startY * 16 + 40 }),
-      Components.Velocity({ maxSpeed: 80 }),
-      Components.Health({ max: 100 }),
-      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
-    ]));
+    this.addEntity(player);
 
     this.header = new GameHeaderText(this.game);
 
@@ -115,7 +90,6 @@ export class MainState extends Phaser.State {
 
   private createMap() {
     this.success = false;
-    this.stats = Object.assign({ score: 0 }, this.stats, { bananasCollected: 0, bananasTotal: 0 });
 
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
@@ -125,20 +99,27 @@ export class MainState extends Phaser.State {
         }
 
         const tileKey = tileConfig.key;
-        if (tileKey === Utils.Assets.Sprites.BANANA) {
-          this.stats.bananasTotal++;
-        }
-
-        this.addEntity(new Entity().addComponents([
+        let components: Components.Component[] = [
           Components.Sprite({ key: tileKey }),
           Components.Position({ x: col * 16, y: row * 16 })
-        ]));
+        ];
+
+        if (tileKey === Utils.Assets.Sprites.BANANA) {
+          components = components.concat([
+            Components.AIControllable(),
+            Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+            Components.Velocity({ maxSpeed: 80 }),
+            Components.Health({ max: 100 })
+          ]);
+        }
+
+        this.addEntity(new Entity().addComponents(components));
       }
     }
   }
 
   isLevelComplete() {
-    return this.stats.bananasCollected === this.stats.bananasTotal;
+    return false;
   }
 
   pauseLevel(paused: boolean) {
@@ -203,23 +184,7 @@ export class MainState extends Phaser.State {
       system.update(this.entities);
     }
 
-    // this.renderSystem.update(this.entities);
-
-    // this.game.physics.arcade.collide(this.player.sprite, this.walls);
-    // this.game.physics.arcade.overlap(this.player.sprite, this.bananas, this.eatBanana, undefined, this);
-    // this.game.physics.arcade.overlap(this.player.sprite, this.enemies, this.restart, undefined, this);
-
-    // this.player.update();
-
-    // if (this.player.body.position.y > this.world.height) {
-    //   this.die();
-    // }
-
-    // if (!this.success && this.isLevelComplete()) {
-    //   this.levelSuccess();
-    // }
-
-    // this.header.update(this.stats);
+    this.header.update(this);
   }
 
   goToLevel(index: number) {
@@ -238,23 +203,19 @@ export class MainState extends Phaser.State {
   }
 }
 
-interface LevelStats {
-  bananasCollected: number;
-  bananasTotal: number;
-  score: number;
-}
-
 export class GameHeaderText {
-  private scoreLabel: Phaser.BitmapText;
-  private bananaLabel: Phaser.BitmapText;
+  private healthLabel: Phaser.BitmapText;
 
   constructor(game: Phaser.Game) {
-    this.scoreLabel = Utils.Label.addFixedLabel(game, 2, 'Score:', 8, Utils.Label.TextAlign.Left, 2);
-    this.bananaLabel = Utils.Label.addFixedLabel(game, 2, '00/00', 8, Utils.Label.TextAlign.Right, 2);
+    this.healthLabel = Utils.Label.addFixedLabel(game, 2, 'Health:', 8, Utils.Label.TextAlign.Left, 2);
   }
 
-  update(stats: LevelStats) {
-    this.scoreLabel.text = 'Score:' + stats.score;
-    this.bananaLabel.text = `${Utils.Label.leftPad(stats.bananasCollected)}/${Utils.Label.leftPad(stats.bananasTotal)}`;
+  update(state: MainState) {
+    const player = state.entities[state.playerId];
+    const health = player && player.getComponent(Components.Health);
+
+    if (health) {
+      this.healthLabel.text = 'Health:' + `${Utils.Label.leftPad(health.current)}/${Utils.Label.leftPad(health.max)}`;
+    }
   }
 }

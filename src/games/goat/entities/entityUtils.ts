@@ -70,7 +70,7 @@ export class Entity {
     }
   }
 
-  getComponent<T>(componentFn: ComponentFunction<T>): T | null {
+  getComponent<T, T2>(componentFn: ComponentFunction<T, T2>): T | null {
     const component = this._componentsByType[componentFn.type] as Component<T>;
     return component ? component.data : null;
   }
