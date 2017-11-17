@@ -54,6 +54,13 @@ export class Entity {
     return this;
   }
 
+  addComponents(components: Component[]) {
+    for (const component of components) {
+      this.addComponent(component);
+    }
+    return this;
+  }
+
   removeComponent(componentType: string) {
     const componentConfig = this._componentsByType[componentType];
     if (componentConfig) {

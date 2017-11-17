@@ -23,7 +23,7 @@ export class MainState extends Phaser.State {
   keys: Utils.Input.KeyMap;
   onEntityAdded: Phaser.Signal;
   entities: EntityMap;
-  sprites: { [key: string]: Phaser.Sprite };
+  sprites: { [key: string]: Phaser.Sprite | undefined };
   systems: Systems.System[];
 
   preload() {
@@ -57,15 +57,20 @@ export class MainState extends Phaser.State {
     this.onEntityAdded = new Phaser.Signal();
 
     this.systems = [
-      new Systems.Render(this.game, this)
+      new Systems.Render(this.game, this),
+      new Systems.Input(this),
+      new Systems.Movement(this),
+      new Systems.Collision(this)
     ];
 
-    this.addEntity(new Entity()
-      .addComponent(Components.PlayerControllable())
-      .addComponent(Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }))
-      .addComponent(Components.Velocity())
-      .addComponent(Components.Health({ max: 100 }))
-      .addComponent(Components.Sprite({ key: Utils.Assets.Sprites.MONKEY })));
+    this.addEntity(new Entity().addComponents([
+      Components.PlayerControllable(),
+      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+      Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }),
+      Components.Velocity(),
+      Components.Health({ max: 100 }),
+      Components.Sprite({ key: Utils.Assets.Sprites.MONKEY })
+    ]));
 
     this.header = new GameHeaderText(this.game);
 
@@ -94,9 +99,10 @@ export class MainState extends Phaser.State {
           this.stats.bananasTotal++;
         }
 
-        this.addEntity(new Entity()
-          .addComponent(Components.Sprite({ key: tileKey }))
-          .addComponent(Components.Position({ x: col * 16, y: row * 16 })));
+        this.addEntity(new Entity().addComponents([
+          Components.Sprite({ key: tileKey }),
+          Components.Position({ x: col * 16, y: row * 16 })
+        ]));
       }
     }
   }
@@ -161,6 +167,10 @@ export class MainState extends Phaser.State {
 
     if (this.isPaused) {
       return;
+    }
+
+    for (const system of this.systems) {
+      system.update(this.entities);
     }
 
     // this.renderSystem.update(this.entities);

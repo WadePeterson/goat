@@ -34,7 +34,7 @@ interface ActionKeyMap {
 }
 
 export class KeyMap {
-  actionMap: ActionKeyMap;
+  private actionMap: ActionKeyMap;
 
   constructor(game: Phaser.Game, actionKeyMap = defaultActionKeyMap) {
     this.actionMap = Object.keys(actionKeyMap).reduce((acc, action) => {

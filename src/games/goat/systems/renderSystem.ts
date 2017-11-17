@@ -9,14 +9,19 @@ export default class RenderSystem implements System {
   }
 
   onEntityAdded(entity: Entity) {
-    const [spriteComp, player, position] = entity.getComponents(Components.Sprite, Components.PlayerControllable, Components.Position);
+    const [spriteComp, player, position, velocity] = entity.getComponents(Components.Sprite, Components.PlayerControllable, Components.Position, Components.Velocity);
 
     if (spriteComp) {
       const sprite = this.game.add.sprite(position ? position.x : 0, position ? position.y : 0, spriteComp.key);
+      const body: Phaser.Physics.Arcade.Body = sprite.body;
+
       this.state.sprites[entity.id] = sprite;
 
+      if (!velocity) {
+        body.immovable = true;
+      }
+
       if (player) {
-        const body: Phaser.Physics.Arcade.Body = sprite.body;
         body.collideWorldBounds = true;
         body.setSize(14, 13, 1, 3);
 
