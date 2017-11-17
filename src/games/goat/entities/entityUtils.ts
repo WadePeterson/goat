@@ -63,8 +63,17 @@ export class Entity {
     }
   }
 
-  getComponent<T>(componentFn: ComponentFunction<T>): Component<T> | null {
-    const component = this._componentsByType[componentFn.type];
-    return component ? component as Component<T> : null;
+  getComponent<T>(componentFn: ComponentFunction<T>): T | null {
+    const component = this._componentsByType[componentFn.type] as Component<T>;
+    return component ? component.data : null;
+  }
+
+  getComponents<T1, T2>(c1: ComponentFunction<T1>, c2: ComponentFunction<T2>): [T1 | null, T2 | null];
+  getComponents<T1, T2, T3>(c1: ComponentFunction<T1>, c2: ComponentFunction<T2>, c3: ComponentFunction<T3>): [T1 | null, T2 | null, T3 | null];
+  getComponents<T1, T2, T3, T4>(c1: ComponentFunction<T1>, c2: ComponentFunction<T2>, c3: ComponentFunction<T3>, c4: ComponentFunction<T4>): [T1 | null, T2 | null, T3 | null, T3 | null];
+  getComponents(...compFns: ComponentFunction<any>[]) {
+    return compFns.map(c => this.getComponent(c));
   }
 }
+
+export interface EntityMap { [key: string]: Entity; }

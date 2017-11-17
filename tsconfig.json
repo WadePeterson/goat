@@ -5,8 +5,7 @@
     "noUnusedParameters": true,
     "target": "es6",
     "sourceMap": true,
-    "strict": true,
-    "experimentalDecorators": true
+    "strict": true
   },
   "exclude": [
     "dist",

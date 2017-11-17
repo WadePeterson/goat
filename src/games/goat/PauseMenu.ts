@@ -1,5 +1,5 @@
-import { LevelState } from '../states/LevelState';
-import * as Utils from '../utils';
+import { MainState } from './game';
+import * as Utils from './utils';
 
 interface MenuItem {
   action: () => void;
@@ -11,11 +11,11 @@ export class PauseMenu {
   game: Phaser.Game;
   isOpen: boolean;
   menuGroup: Phaser.Group | undefined;
-  levelState: LevelState;
+  levelState: MainState;
   menuItems: MenuItem[];
   activeItemIndex: number;
 
-  constructor(game: Phaser.Game, levelState: LevelState) {
+  constructor(game: Phaser.Game, levelState: MainState) {
     this.game = game;
     this.levelState = levelState;
     this.isOpen = false;
