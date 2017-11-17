@@ -10,9 +10,7 @@
   "author": "Wade Peterson",
   "license": "MIT",
   "homepage": "https://github.com/WadePeterson/GOAT",
-  "dependencies": {
-    "phaser-ce": "^2.9.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/webpack-env": "^1.13.2",
     "autoprefixer": "^7.1.6",
