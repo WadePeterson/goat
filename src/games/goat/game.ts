@@ -30,6 +30,8 @@ export class MainState extends Phaser.State {
     this.config = levels[this.levelIndex];
     const loadedTiles: { [key: string]: boolean } = {};
 
+    this.game.load.image(Utils.Assets.Sprites.BANANA, Utils.Assets.getTileConfig('b').imgPath);
+
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
         const tileConfig = Utils.Assets.getTileConfig(this.config.tileData[row][col]);
@@ -59,6 +61,7 @@ export class MainState extends Phaser.State {
     this.systems = [
       new Systems.Render(this.game, this),
       new Systems.Input(this),
+      new Systems.AI(this),
       new Systems.Movement(this),
       new Systems.Collision(this)
     ];
@@ -70,6 +73,33 @@ export class MainState extends Phaser.State {
       Components.Velocity(),
       Components.Health({ max: 100 }),
       Components.Sprite({ key: Utils.Assets.Sprites.MONKEY })
+    ]));
+
+    this.addEntity(new Entity().addComponents([
+      Components.AIControllable(),
+      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+      Components.Position({ x: this.config.startX * 16 + 40, y: this.config.startY * 16 + 40 }),
+      Components.Velocity({ maxSpeed: 60 }),
+      Components.Health({ max: 100 }),
+      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
+    ]));
+
+    this.addEntity(new Entity().addComponents([
+      Components.AIControllable(),
+      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+      Components.Position({ x: this.config.startX * 16 + 90, y: this.config.startY * 16 + 40 }),
+      Components.Velocity({ maxSpeed: 60 }),
+      Components.Health({ max: 100 }),
+      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
+    ]));
+
+    this.addEntity(new Entity().addComponents([
+      Components.AIControllable(),
+      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+      Components.Position({ x: this.config.startX * 16 + 140, y: this.config.startY * 16 + 40 }),
+      Components.Velocity({ maxSpeed: 80 }),
+      Components.Health({ max: 100 }),
+      Components.Sprite({ key: Utils.Assets.Sprites.BANANA })
     ]));
 
     this.header = new GameHeaderText(this.game);

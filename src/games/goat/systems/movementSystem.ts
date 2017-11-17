@@ -11,19 +11,21 @@ export default class MovementSystem implements System {
   update(entities: EntityMap) {
     for (const entityId of Object.keys(entities)) {
       const entity = entities[entityId];
-      const [player, velocity] = entity.getComponents(Components.PlayerControllable, Components.Velocity);
+      const [player, ai, velocity, position] = entity.getComponents(Components.PlayerControllable, Components.AIControllable, Components.Velocity, Components.Position);
 
-      if (!velocity) {
+      if (!velocity || !position) {
         continue;
       }
 
       const sprite = this.state.sprites[entity.id];
       const body = sprite && sprite.body as Phaser.Physics.Arcade.Body;
-      const actions = (player && player.actions) || {};
+      const actions = (player && player.actions) || (ai && ai.actions) || {};
 
       if (body) {
         velocity.x = body.velocity.x;
         velocity.y = body.velocity.y;
+        position.x = body.position.x;
+        position.y = body.position.y;
       }
 
       if (actions) {

@@ -30,7 +30,7 @@ export default defineLevel({
     'g                                                                             g',
     'g         s                                                                   g',
     'g    sss                                                                      g',
-    'g             b                                                               g',
+    'g             s                                                               g',
     'g                                                                             g',
     'g       sss                                                                   g',
     'g                                                                             g',

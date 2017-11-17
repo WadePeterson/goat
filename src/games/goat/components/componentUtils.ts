@@ -27,6 +27,7 @@ function component<T, T2>(type: string, initializerOrDefault?: ComponentInitaliz
 
 export const Position = component<{ x: number; y: number; }>('position');
 export const Velocity = component<{ x: number; y: number; maxSpeed: number }>('velocity', { x: 0, y: 0, maxSpeed: 90 });
+export const AIControllable = component<{ actions: { [key: string]: any } }>('ai', { actions: {} });
 export const PlayerControllable = component<{ actions: { [key: string]: any } }>('player', { actions: {} });
 export const Sprite = component<{ key: string; }>('sprite');
 export const Health = component('health', (data: { current?: number; max: number }) => {
