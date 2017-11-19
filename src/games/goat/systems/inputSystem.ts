@@ -1,5 +1,6 @@
-import { EntityMap } from '../entities';
+import * as Commands from '../commands';
 import * as Components from '../components';
+import { EntityMap } from '../entity';
 import { Action } from '../utils/inputUtils';
 import { MainState } from '../game';
 import { System } from './systemUtils';
@@ -10,12 +11,12 @@ export default class InputSystem implements System {
   update(entities: EntityMap) {
     for (const entityId of Object.keys(entities)) {
       const entity = entities[entityId];
-      const player = entity.getComponent(Components.PlayerControllable);
-      if (!player) {
+      const player = entity.getComponent(Components.Player);
+      const commandable = entity.getComponent(Components.Commandable);
+
+      if (!player || !commandable) {
         continue;
       }
-
-      player.actions = {};
 
       const keys = this.state.keys;
       const pressingUp = keys.isDown(Action.MoveUp);
@@ -23,14 +24,16 @@ export default class InputSystem implements System {
       const pressingRight = keys.isDown(Action.MoveRight);
       const pressingLeft = keys.isDown(Action.MoveLeft);
 
+      commandable.commands = {};
+
       if (pressingUp !== pressingDown) {
-        player.actions[pressingUp ? Action.MoveUp : Action.MoveDown] = true;
+        Commands.addCommand(commandable.commands, pressingUp ? Commands.MoveUp() : Commands.MoveDown());
       }
       if (pressingLeft !== pressingRight) {
-        player.actions[pressingLeft ? Action.MoveLeft : Action.MoveRight] = true;
+        Commands.addCommand(commandable.commands, pressingLeft ? Commands.MoveLeft() : Commands.MoveRight());
       }
       if (keys.isDown(Action.Attack)) {
-        player.actions[Action.Attack] = true; // TODO: Probably include more stuff, like just down and duration?
+        Commands.addCommand(commandable.commands, Commands.Attack());
       }
     }
   }

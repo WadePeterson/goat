@@ -1,5 +1,5 @@
-import { EntityMap } from '../entities';
-import { Action } from '../utils/inputUtils';
+import { EntityMap } from '../entity';
+import * as Commands from '../commands';
 import * as Components from '../components';
 import { MainState } from '../game';
 import { System } from './systemUtils';
@@ -13,22 +13,27 @@ export default class AISystem implements System {
 
     for (const entityId of Object.keys(entities)) {
       const entity = entities[entityId];
-      const [player, ai, position] = entity.getComponents(Components.PlayerControllable, Components.AIControllable, Components.Position);
+      const position = entity.getComponent(Components.Position);
 
       if (!position) {
         continue;
       }
 
-      if (player) {
-        players.push({ entity, player, position });
-      } else if (ai) {
-        aiControlledEntities.push({ entity, ai, position });
+      if (entity.getComponent(Components.Player)) {
+        players.push({ entity, position });
+      } else if (entity.getComponent(Components.AI)) {
+        aiControlledEntities.push({ entity, position });
       }
     }
 
     for (const aiEntity of aiControlledEntities) {
       let nearestPlayer: typeof players[0] | null = null;
       let nearestDistance = 0;
+
+      const commandable = aiEntity.entity.getComponent(Components.Commandable);
+      if (!commandable) {
+        continue;
+      }
 
       for (const player of players) {
         const distance = Phaser.Math.distance(aiEntity.position.x, aiEntity.position.y, player.position.x, player.position.y);
@@ -39,19 +44,8 @@ export default class AISystem implements System {
       }
 
       if (nearestPlayer) {
-        aiEntity.ai.actions = {};
-
-        if (nearestPlayer.position.x < aiEntity.position.x) {
-          aiEntity.ai.actions[Action.MoveLeft] = true;
-        } else if (nearestPlayer.position.x > aiEntity.position.x) {
-          aiEntity.ai.actions[Action.MoveRight] = true;
-        }
-
-        if (nearestPlayer.position.y > aiEntity.position.y) {
-          aiEntity.ai.actions[Action.MoveDown] = true;
-        } else if (nearestPlayer.position.y < aiEntity.position.y) {
-          aiEntity.ai.actions[Action.MoveUp] = true;
-        }
+        commandable.commands = {};
+        Commands.addCommand(commandable.commands, Commands.MoveToPoint({ x: nearestPlayer.position.x, y: nearestPlayer.position.y }));
       }
     }
   }

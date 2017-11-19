@@ -1,9 +1,10 @@
 import * as Components from './components';
-import { Entity, EntityMap } from './entities';
+import { Entity, EntityMap } from './entity';
 import * as Systems from './systems';
 import * as Utils from './utils';
 import { PauseMenu } from './PauseMenu';
 import levels, { LevelConfig } from './levels';
+import { Component } from './components';
 
 export enum GameStates {
   Boot = 'boot',
@@ -21,10 +22,11 @@ export class MainState extends Phaser.State {
 
   playerId: string;
   keys: Utils.Input.KeyMap;
-  onEntityAdded: Phaser.Signal;
   entities: EntityMap;
   sprites: { [key: string]: Phaser.Sprite | undefined };
   systems: Systems.System[];
+
+  onEntityAdded: Phaser.Signal;
 
   preload() {
     this.config = levels[this.levelIndex];
@@ -52,12 +54,12 @@ export class MainState extends Phaser.State {
     this.keys = new Utils.Input.KeyMap(this.game);
     this.pauseMenu = new PauseMenu(this.game, this);
 
-    this.sprites = {};
-    this.entities = {};
     this.onEntityAdded = new Phaser.Signal();
 
+    this.sprites = {};
+    this.entities = {};
+
     this.systems = [
-      new Systems.Render(this.game, this),
       new Systems.Input(this),
       new Systems.AI(this),
       new Systems.Movement(this),
@@ -65,7 +67,8 @@ export class MainState extends Phaser.State {
     ];
 
     const player = new Entity().addComponents([
-      Components.PlayerControllable(),
+      Components.Player(),
+      Components.Commandable(),
       Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
       Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }),
       Components.Velocity(),
@@ -85,6 +88,38 @@ export class MainState extends Phaser.State {
 
   private addEntity(entity: Entity) {
     this.entities[entity.id] = entity;
+
+    const spriteComp = entity.getComponent(Components.Sprite);
+    if (spriteComp) {
+      const position = entity.getComponent(Components.Position);
+      const sprite = this.game.add.sprite(position ? position.x : 0, position ? position.y : 0, spriteComp.key);
+      sprite.data.entityId = entity.id;
+      const body: Phaser.Physics.Arcade.Body = sprite.body;
+      this.sprites[entity.id] = sprite;
+
+      sprite.anchor.x = 1;
+      sprite.anchor.y = 0;
+
+      const collidable = entity.getComponent(Components.CollidableBox);
+      if (collidable) {
+        collidable.width = collidable.width || sprite.width;
+        collidable.height = collidable.height || sprite.height;
+
+        body.collideWorldBounds = true;
+        body.setSize(collidable.width, collidable.height, collidable.offsetX, collidable.offsetY);
+      }
+
+      if (!entity.getComponent(Components.Velocity)) {
+        body.immovable = true;
+      }
+
+      if (entity.getComponent(Components.Player)) {
+        sprite.checkWorldBounds = true;
+        sprite.animations.add('walking', [0, 1, 2, 3], 10, true);
+        this.game.camera.follow(sprite);
+      }
+    }
+
     this.onEntityAdded.dispatch(entity);
   }
 
@@ -99,18 +134,21 @@ export class MainState extends Phaser.State {
         }
 
         const tileKey = tileConfig.key;
-        let components: Components.Component[] = [
+        const components: Component<any>[] = [];
+
+        components.push(
           Components.Sprite({ key: tileKey }),
-          Components.Position({ x: col * 16, y: row * 16 })
-        ];
+          Components.Position({ x: col * 16, y: row * 16 }),
+          Components.CollidableBox()
+        );
 
         if (tileKey === Utils.Assets.Sprites.BANANA) {
-          components = components.concat([
-            Components.AIControllable(),
-            Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
+          components.push(
+            Components.AI(),
+            Components.Commandable(),
             Components.Velocity({ maxSpeed: 80 }),
             Components.Health({ max: 100 })
-          ]);
+          );
         }
 
         this.addEntity(new Entity().addComponents(components));
@@ -180,11 +218,38 @@ export class MainState extends Phaser.State {
       return;
     }
 
+    this.syncPhysics(true);
+
     for (const system of this.systems) {
       system.update(this.entities);
     }
 
+    this.syncPhysics(false);
+
     this.header.update(this);
+  }
+
+  syncPhysics(fromPhysics: boolean) {
+    for (const entityId of Object.keys(this.sprites)) {
+      this.syncPhysicsForEntity(entityId, fromPhysics);
+    }
+  }
+
+  syncPhysicsForEntity(entityId: string, fromPhysics: boolean) {
+    const sprite = this.sprites[entityId] as Phaser.Sprite;
+    const body = sprite.body as Phaser.Physics.Arcade.Body;
+    const entity = this.entities[entityId];
+    this.copyValues(body.position, entity.getComponent(Components.Position), fromPhysics);
+    this.copyValues(body.velocity, entity.getComponent(Components.Velocity), fromPhysics);
+  }
+
+  copyValues(physicsValue: { x: number; y: number }, compValue: { x: number; y: number } | null, fromPhysics: boolean) {
+    if (compValue) {
+      const src = fromPhysics ? physicsValue : compValue;
+      const dest = fromPhysics ? compValue : physicsValue;
+      dest.x = src.x;
+      dest.y = src.y;
+    }
   }
 
   goToLevel(index: number) {

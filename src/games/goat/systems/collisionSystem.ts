@@ -1,4 +1,4 @@
-import { Entity, EntityMap } from '../entities';
+import { Entity, EntityMap } from '../entity';
 // import * as Components from '../components';
 import { MainState } from '../game';
 import { System } from './systemUtils';
@@ -11,15 +11,21 @@ export default class CollisionSystem implements System {
     state.onEntityAdded.add(this.onEntityAdded, this);
   }
 
-  onEntityAdded(entity: Entity) {
+  onEntityAdded = (entity: Entity) => {
     const sprite = this.state.sprites[entity.id];
     if (sprite) {
       this.collisionGroup.add(sprite);
     }
   }
 
+  onCollision = (sprite1: Phaser.Sprite, sprite2: Phaser.Sprite) => {
+    this.state.syncPhysicsForEntity(sprite1.data.entityId, true);
+    this.state.syncPhysicsForEntity(sprite2.data.entityId, true);
+  }
+
   update(__entities: EntityMap) {
-    this.state.game.physics.arcade.collide(this.collisionGroup);
+    // TODO: This is called for all sprites, including walls trying to collide with other walls
+    this.state.game.physics.arcade.collide(this.collisionGroup, undefined, this.onCollision);
 
     // for (const entityId of Object.keys(entities)) {
     //   const entity = entities[entityId];

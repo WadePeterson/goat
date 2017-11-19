@@ -1,9 +1,23 @@
-import { EntityMap } from '../entities';
+import * as Commands from '../commands';
 import * as Components from '../components';
-import { Action } from '../utils/inputUtils';
+import { EntityMap } from '../entity';
 import { sinPiOver4 } from '../utils/mathUtils';
 import { MainState } from '../game';
 import { System } from './systemUtils';
+
+// interface HandlerArgs {
+//   velocity?: Components.Velocity;
+//   position?: Components.Position;
+// }
+
+// const handleCommand = Commands.createCommandHandler<HandlerArgs>();
+// const handleCommands = Commands.createCommandHandlers(
+//   handleCommand(Commands.MoveDown, (args) => {
+//     if (args.velocity) {
+
+//     }
+//   })
+// );
 
 export default class MovementSystem implements System {
   constructor(private state: MainState) { }
@@ -11,51 +25,64 @@ export default class MovementSystem implements System {
   update(entities: EntityMap) {
     for (const entityId of Object.keys(entities)) {
       const entity = entities[entityId];
-      const [player, ai, velocity, position] = entity.getComponents(Components.PlayerControllable, Components.AIControllable, Components.Velocity, Components.Position);
+      const velocity = entity.getComponent(Components.Velocity);
+      const position = entity.getComponent(Components.Position);
 
       if (!velocity || !position) {
         continue;
       }
 
-      const sprite = this.state.sprites[entity.id];
-      const body = sprite && sprite.body as Phaser.Physics.Arcade.Body;
-      const actions = (player && player.actions) || (ai && ai.actions) || {};
+      const commandable = entity.getComponent(Components.Commandable);
+      const commands = commandable && commandable.commands;
 
-      if (body) {
-        velocity.x = body.velocity.x;
-        velocity.y = body.velocity.y;
-        position.x = body.position.x;
-        position.y = body.position.y;
-      }
-
-      if (actions) {
+      if (commands) {
         let directionX = 0;
         let directionY = 0;
 
-        if (actions[Action.MoveLeft]) {
-          directionX = -1;
-        } else if (actions[Action.MoveRight]) {
-          directionX = 1;
+        const moveUp = Commands.getCommand(commands, Commands.MoveUp);
+        const moveDown = Commands.getCommand(commands, Commands.MoveDown);
+        const moveLeft = Commands.getCommand(commands, Commands.MoveLeft);
+        const moveRight = Commands.getCommand(commands, Commands.MoveRight);
+        const moveToPoint = Commands.getCommand(commands, Commands.MoveToPoint);
+
+        if (moveUp || (moveToPoint && moveToPoint.y < position.y)) {
+          directionY -= 1;
+        }
+        if (moveDown || (moveToPoint && moveToPoint.y > position.y)) {
+          directionY += 1;
+        }
+        if (moveLeft || (moveToPoint && moveToPoint.x < position.x)) {
+          directionX -= 1;
+        }
+        if (moveRight || (moveToPoint && moveToPoint.x > position.x)) {
+          directionX += 1;
         }
 
-        if (actions[Action.MoveUp]) {
-          directionY = -1;
-        } else if (actions[Action.MoveDown]) {
-          directionY = 1;
-        }
+        const sprite = this.state.sprites[entityId];
 
-        if (directionX && directionY) {
-          directionX = directionX * sinPiOver4;
-          directionY = directionY * sinPiOver4;
+        if (directionX || directionY) {
+          if (directionX && directionY) {
+            directionX = directionX * sinPiOver4;
+            directionY = directionY * sinPiOver4;
+          }
+
+          if (sprite) {
+            sprite.animations.play('walking');
+
+            if (directionX > 0) {
+              sprite.scale.x = 1;
+              sprite.anchor.x = 1;
+            } else if (directionX < 0) {
+              sprite.scale.x = -1;
+              sprite.anchor.x = 0;
+            }
+          }
+        } else if (sprite) {
+          sprite.animations.stop();
         }
 
         velocity.x = velocity.maxSpeed * directionX;
         velocity.y = velocity.maxSpeed * directionY;
-
-        if (body) {
-          body.velocity.x = velocity.x;
-          body.velocity.y = velocity.y;
-        }
       }
     }
   }

@@ -16,7 +16,7 @@ class JumpState {
   private hangTime = 100;
   private jumpSound: Phaser.Sound;
 
-  constructor(private game: Phaser.Game, private player: Player, private keys: KeyMap) { 
+  constructor(private game: Phaser.Game, private player: Player, private keys: KeyMap) {
     this.jumpSound = game.add.audio(SoundFX.JUMP);
   }
 
