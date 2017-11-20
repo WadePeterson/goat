@@ -139,16 +139,25 @@ export class MainState extends Phaser.State {
   }
 
   killEntity(entityId: string) {
-    const entity = this.entities[entityId];
-    delete this.entities[entityId];
     const sprite = this.sprites[entityId];
+    const entity = this.entities[entityId];
 
     this.onEntityRemoved.dispatch(entity, sprite);
 
     if (sprite) {
+      if (entity.getComponent(Components.Player)) {
+        this.header.update(this);
+        Utils.Label.fadeText(this.game, 0, 104, 'You done goofed.', 8, Utils.Label.TextAlign.Center).then(() => {
+          setTimeout(() => {
+            this.game.state.start(GameStates.Dungeon, true, false);
+          }, 500);
+        });
+      }
       sprite.kill();
       delete this.sprites[entityId];
     }
+
+    delete this.entities[entityId];
   }
 
   private createMap() {
@@ -175,6 +184,7 @@ export class MainState extends Phaser.State {
             Components.AI(),
             Components.Commandable(),
             Components.Velocity({ maxSpeed: 40 }),
+            Components.DamagesOnCollision({ damage: 1 }),
             Components.Health({ max: 5 })
           );
         }

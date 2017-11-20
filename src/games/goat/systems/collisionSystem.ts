@@ -27,8 +27,8 @@ export default class CollisionSystem implements System {
     const entity1 = this.state.syncPhysicsForEntity(sprite1.data.entityId, true);
     const entity2 = this.state.syncPhysicsForEntity(sprite2.data.entityId, true);
 
-    const entity1Dead = this.dealDamage(entity2, entity1) || !!entity1.getComponent(Components.Projectile);
-    const entity2Dead = this.dealDamage(entity1, entity2) || !!entity2.getComponent(Components.Projectile);
+    const entity1Dead = this.dealDamage(entity2, entity1) || !!entity1.getComponent(Components.DestroyedOnCollision);
+    const entity2Dead = this.dealDamage(entity1, entity2) || !!entity2.getComponent(Components.DestroyedOnCollision);
 
     if (entity1Dead) {
       this.state.killEntity(entity1.id);
@@ -39,7 +39,7 @@ export default class CollisionSystem implements System {
   }
 
   dealDamage(source: Entity, target: Entity) {
-    const damager = source.getComponent(Components.Projectile);
+    const damager = source.getComponent(Components.DamagesOnCollision);
     const health = target.getComponent(Components.Health);
 
     if (damager && health) {

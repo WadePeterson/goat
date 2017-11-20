@@ -24,4 +24,5 @@ export const Health = component('health', (data: { current?: number; max: number
 export const CollidableBox = component<{ width: number; height: number; offsetX: number; offsetY: number }>('collidablebox', { width: 0, height: 0, offsetX: 0, offsetY: 0 });
 export const Weapon = component<{ damage: number; attackDelay: number }>('weapon');
 
-export const Projectile = component<{ damage: number }>('damagesonimpact');
+export const DamagesOnCollision = component<{ damage: number }>('damagesonimpact');
+export const DestroyedOnCollision = component('destroyedonimpact');

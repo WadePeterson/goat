@@ -66,7 +66,8 @@ export default class AttackSystem implements System {
       const startY = body.center.y + dY * (body.halfHeight + 6);
 
       this.state.addEntity(new Entity().addComponents([
-        Components.Projectile({ damage: weapon.damage }),
+        Components.DamagesOnCollision({ damage: weapon.damage }),
+        Components.DestroyedOnCollision(),
         Components.CollidableBox({ width: 4, height: 4, offsetX: 2, offsetY: 2 }),
         Components.Sprite({ key: Sprites.BULLET, animations: [{ name: 'walking', frames: [0, 1, 2, 3], frameRate: 15, loop: true, autoPlay: true }] }),
         Components.Position({ x: startX, y: startY, angle: attackAngle }),

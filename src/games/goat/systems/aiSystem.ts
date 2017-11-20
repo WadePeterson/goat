@@ -28,23 +28,24 @@ export default class AISystem implements System {
 
     for (const aiEntity of aiControlledEntities) {
       let nearestPlayer: typeof players[0] | null = null;
-      let nearestDistance = 0;
+      let nearestDistance = 150;
 
       const commandable = aiEntity.entity.getComponent(Components.Commandable);
       if (!commandable) {
         continue;
       }
 
+      commandable.commands = {};
+
       for (const player of players) {
         const distance = Phaser.Math.distance(aiEntity.position.x, aiEntity.position.y, player.position.x, player.position.y);
-        if (!nearestPlayer || distance < nearestDistance) {
+        if (distance < nearestDistance) {
           nearestPlayer = player;
           nearestDistance = distance;
         }
       }
 
       if (nearestPlayer) {
-        commandable.commands = {};
         Commands.addCommand(commandable.commands, Commands.MoveToPoint({ x: nearestPlayer.position.x, y: nearestPlayer.position.y }));
       }
     }
