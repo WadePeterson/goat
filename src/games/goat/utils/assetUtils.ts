@@ -14,6 +14,7 @@ export const Music = {
 };
 
 export const Sprites = {
+  BULLET: 'bullet',
   BANANA: 'banana',
   GRASS: 'grass',
   GROUND1: 'ground1',
@@ -23,6 +24,14 @@ export const Sprites = {
 interface TileConfig {
   key: string;
   imgPath: string;
+}
+
+export interface AnimationConfig {
+  name: string;
+  frames: number[];
+  frameRate: number;
+  loop: boolean;
+  autoPlay?: boolean;
 }
 
 function tile(key: string, imgPath: string): TileConfig {

@@ -5,20 +5,6 @@ import { sinPiOver4 } from '../utils/mathUtils';
 import { MainState } from '../game';
 import { System } from './systemUtils';
 
-// interface HandlerArgs {
-//   velocity?: Components.Velocity;
-//   position?: Components.Position;
-// }
-
-// const handleCommand = Commands.createCommandHandler<HandlerArgs>();
-// const handleCommands = Commands.createCommandHandlers(
-//   handleCommand(Commands.MoveDown, (args) => {
-//     if (args.velocity) {
-
-//     }
-//   })
-// );
-
 export default class MovementSystem implements System {
   constructor(private state: MainState) { }
 
@@ -44,6 +30,7 @@ export default class MovementSystem implements System {
         const moveLeft = Commands.getCommand(commands, Commands.MoveLeft);
         const moveRight = Commands.getCommand(commands, Commands.MoveRight);
         const moveToPoint = Commands.getCommand(commands, Commands.MoveToPoint);
+        const turn = Commands.getCommand(commands, Commands.Turn);
 
         if (moveUp || (moveToPoint && moveToPoint.y < position.y)) {
           directionY -= 1;
@@ -57,6 +44,9 @@ export default class MovementSystem implements System {
         if (moveRight || (moveToPoint && moveToPoint.x > position.x)) {
           directionX += 1;
         }
+        if (turn) {
+          position.angle = turn.angle;
+        }
 
         const sprite = this.state.sprites[entityId];
 
@@ -64,6 +54,11 @@ export default class MovementSystem implements System {
           if (directionX && directionY) {
             directionX = directionX * sinPiOver4;
             directionY = directionY * sinPiOver4;
+          } else {
+            position.angle = Phaser.Math.angleBetweenPoints(
+              new Phaser.Point(position.x, position.y),
+              new Phaser.Point(position.x + directionX, position.y + directionY)
+            );
           }
 
           if (sprite) {

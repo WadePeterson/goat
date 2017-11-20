@@ -27,6 +27,7 @@ export class MainState extends Phaser.State {
   systems: Systems.System[];
 
   onEntityAdded: Phaser.Signal;
+  onEntityRemoved: Phaser.Signal;
 
   preload() {
     this.config = levels[this.levelIndex];
@@ -55,6 +56,7 @@ export class MainState extends Phaser.State {
     this.pauseMenu = new PauseMenu(this.game, this);
 
     this.onEntityAdded = new Phaser.Signal();
+    this.onEntityRemoved = new Phaser.Signal();
 
     this.sprites = {};
     this.entities = {};
@@ -62,18 +64,20 @@ export class MainState extends Phaser.State {
     this.systems = [
       new Systems.Input(this),
       new Systems.AI(this),
+      new Systems.Attack(this),
       new Systems.Movement(this),
       new Systems.Collision(this)
     ];
 
     const player = new Entity().addComponents([
       Components.Player(),
+      Components.Weapon({ damage: 1, attackDelay: 0.5 }),
       Components.Commandable(),
       Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
       Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }),
       Components.Velocity(),
       Components.Health({ max: 100 }),
-      Components.Sprite({ key: Utils.Assets.Sprites.MONKEY })
+      Components.Sprite({ key: Utils.Assets.Sprites.MONKEY, animations: [{ name: 'walking', frames: [0, 1, 2, 3], loop: true, frameRate: 10 }] })
     ]);
 
     this.playerId = player.id;
@@ -86,7 +90,7 @@ export class MainState extends Phaser.State {
     this.pauseLevel(false);
   }
 
-  private addEntity(entity: Entity) {
+  addEntity(entity: Entity) {
     this.entities[entity.id] = entity;
 
     const spriteComp = entity.getComponent(Components.Sprite);
@@ -99,6 +103,16 @@ export class MainState extends Phaser.State {
 
       sprite.anchor.x = 1;
       sprite.anchor.y = 0;
+
+      if (spriteComp.animations) {
+        for (const animationConfig of spriteComp.animations) {
+          sprite.animations.add(animationConfig.name, animationConfig.frames, animationConfig.frameRate, animationConfig.loop);
+
+          if (animationConfig.autoPlay) {
+            sprite.animations.play(animationConfig.name);
+          }
+        }
+      }
 
       const collidable = entity.getComponent(Components.CollidableBox);
       if (collidable) {
@@ -115,12 +129,26 @@ export class MainState extends Phaser.State {
 
       if (entity.getComponent(Components.Player)) {
         sprite.checkWorldBounds = true;
-        sprite.animations.add('walking', [0, 1, 2, 3], 10, true);
         this.game.camera.follow(sprite);
       }
+
+      this.syncPhysicsForEntity(entity.id, false);
     }
 
     this.onEntityAdded.dispatch(entity);
+  }
+
+  killEntity(entityId: string) {
+    const entity = this.entities[entityId];
+    delete this.entities[entityId];
+    const sprite = this.sprites[entityId];
+
+    this.onEntityRemoved.dispatch(entity, sprite);
+
+    if (sprite) {
+      sprite.kill();
+      delete this.sprites[entityId];
+    }
   }
 
   private createMap() {
@@ -146,8 +174,8 @@ export class MainState extends Phaser.State {
           components.push(
             Components.AI(),
             Components.Commandable(),
-            Components.Velocity({ maxSpeed: 80 }),
-            Components.Health({ max: 100 })
+            Components.Velocity({ maxSpeed: 40 }),
+            Components.Health({ max: 5 })
           );
         }
 
@@ -174,35 +202,6 @@ export class MainState extends Phaser.State {
 
   hidePauseMenu() {
     this.pauseLevel(false);
-  }
-
-  levelSuccess() {
-    this.success = true;
-    const successTextChoices = [
-      'Woohoo!',
-      'Great Success!',
-      'Go, Monkey, Go!',
-    ];
-    this.pauseLevel(true);
-    const text = successTextChoices[this.game.rnd.integerInRange(0, successTextChoices.length - 1)];
-    Utils.Label.fadeText(this.game, 0, 104, text, 16, Utils.Label.TextAlign.Center).then(() => {
-      this.goToLevel(this.levelIndex + 1);
-    });
-  }
-
-  die() {
-    const failureTextChoices = [
-      'Oh poop',
-      'You made baby monkey sad :(',
-      'Nooooooooooooooo!!!',
-    ];
-    this.pauseLevel(true);
-    const text = failureTextChoices[this.game.rnd.integerInRange(0, failureTextChoices.length - 1)];
-    Utils.Label.fadeText(this.game, 0, 104, text, 8, Utils.Label.TextAlign.Center).then(() => {
-      setTimeout(() => {
-        this.restart();
-      }, 500);
-    });
   }
 
   update() {
@@ -241,6 +240,7 @@ export class MainState extends Phaser.State {
     const entity = this.entities[entityId];
     this.copyValues(body.position, entity.getComponent(Components.Position), fromPhysics);
     this.copyValues(body.velocity, entity.getComponent(Components.Velocity), fromPhysics);
+    return entity;
   }
 
   copyValues(physicsValue: { x: number; y: number }, compValue: { x: number; y: number } | null, fromPhysics: boolean) {
@@ -250,15 +250,6 @@ export class MainState extends Phaser.State {
       dest.x = src.x;
       dest.y = src.y;
     }
-  }
-
-  goToLevel(index: number) {
-    this.levelIndex = index % levels.length;
-    this.game.state.start(GameStates.Dungeon);
-  }
-
-  restart() {
-    this.goToLevel(this.levelIndex);
   }
 
   paused() {

@@ -36,7 +36,6 @@ export class PauseMenu {
   createMenuItems(): MenuItem[] {
     const menuItemConfigs = [
       { action: this.close, text: 'Resume Game' },
-      { action: this.restartLevel, text: 'Restart Level' },
     ];
 
     const menuItemHeight = 12;
@@ -58,10 +57,6 @@ export class PauseMenu {
         menuItem.item.alpha = 0.6;
       }
     });
-  }
-
-  restartLevel() {
-    this.levelState.restart();
   }
 
   addMenuItem(text: string, y: number) {

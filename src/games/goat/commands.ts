@@ -4,13 +4,14 @@ const defineCommand = createTypeDefiner('command');
 export type CommandCreator<T = any> = TypeDef<T, 'command'>;
 export type Command<T = any> = TypedData<T, 'command'>;
 
-export const Attack = defineCommand('attack');
+export const Attack = defineCommand<{ angle: number }>('attack');
 export const AttackEntity = defineCommand<{ entityId: string }>('attackentity');
 export const MoveLeft = defineCommand('moveleft');
 export const MoveRight = defineCommand('moveright');
 export const MoveUp = defineCommand('moveup');
 export const MoveDown = defineCommand('movedown');
 export const MoveToPoint = defineCommand<{ x: number; y: number }>('movetopoint');
+export const Turn = defineCommand<{ angle: number }>('turn');
 
 export function isCommandOfType<T>(command: Command, commandCreator: CommandCreator<T>): command is Command<T> {
   return command.type === commandCreator.type;
