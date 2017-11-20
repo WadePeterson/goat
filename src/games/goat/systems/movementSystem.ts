@@ -64,13 +64,15 @@ export default class MovementSystem implements System {
           if (sprite) {
             sprite.animations.play('walking');
 
-            if (directionX > 0) {
-              sprite.scale.x = 1;
-              sprite.anchor.x = 1;
-            } else if (directionX < 0) {
+            let spriteAngle = position.angle;
+            if (spriteAngle === Math.PI) {
+              spriteAngle = 0;
               sprite.scale.x = -1;
-              sprite.anchor.x = 0;
+            } else {
+              sprite.scale.x = 1;
             }
+
+            sprite.rotation = spriteAngle;
           }
         } else if (sprite) {
           sprite.animations.stop();

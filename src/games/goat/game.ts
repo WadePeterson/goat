@@ -128,6 +128,8 @@ export class MainState extends Phaser.State {
       }
 
       if (entity.getComponent(Components.Player)) {
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
         sprite.checkWorldBounds = true;
         this.game.camera.follow(sprite);
       }
