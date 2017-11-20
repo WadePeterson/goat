@@ -4,7 +4,7 @@ import * as Systems from './systems';
 import * as Utils from './utils';
 import { PauseMenu } from './PauseMenu';
 import levels, { LevelConfig } from './levels';
-import { Component } from './components';
+import * as Templates from './templates';
 
 export enum GameStates {
   Boot = 'boot',
@@ -36,7 +36,7 @@ export class MainState extends Phaser.State {
     for (let row = 0; row < this.config.tileData.length; row++) {
       for (let col = 0; col < this.config.tileData[row].length; col++) {
         const tileConfig = Utils.Assets.getTileConfig(this.config.tileData[row][col]);
-        if (tileConfig && !loadedTiles[tileConfig.key]) {
+        if (tileConfig && !loadedTiles[tileConfig.key] && tileConfig.imgPath) {
           this.game.load.image(tileConfig.key, tileConfig.imgPath);
           loadedTiles[tileConfig.key] = true;
         }
@@ -69,16 +69,7 @@ export class MainState extends Phaser.State {
       new Systems.Collision(this)
     ];
 
-    const player = new Entity().addComponents([
-      Components.Player(),
-      Components.Weapon({ damage: 1, attackDelay: 0.5 }),
-      Components.Commandable(),
-      Components.CollidableBox({ width: 14, height: 13, offsetX: 1, offsetY: 3 }),
-      Components.Position({ x: this.config.startX * 16, y: this.config.startY * 16 }),
-      Components.Velocity(),
-      Components.Health({ max: 100 }),
-      Components.Sprite({ key: Utils.Assets.Sprites.MONKEY, animations: [{ name: 'walking', frames: [0, 1, 2, 3], loop: true, frameRate: 10 }] })
-    ]);
+    const player = Templates.player(this.config.startX * 16, this.config.startY * 16);
 
     this.playerId = player.id;
 
@@ -101,8 +92,13 @@ export class MainState extends Phaser.State {
       const body: Phaser.Physics.Arcade.Body = sprite.body;
       this.sprites[entity.id] = sprite;
 
-      sprite.anchor.x = 1;
-      sprite.anchor.y = 0;
+      if (entity.getComponent(Components.Velocity)) {
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
+      } else {
+        sprite.anchor.x = 1;
+        sprite.anchor.y = 0;
+      }
 
       if (spriteComp.animations) {
         for (const animationConfig of spriteComp.animations) {
@@ -173,25 +169,18 @@ export class MainState extends Phaser.State {
         }
 
         const tileKey = tileConfig.key;
-        const components: Component<any>[] = [];
+        const x = col * 16;
+        const y = row * 16;
 
-        components.push(
-          Components.Sprite({ key: tileKey }),
-          Components.Position({ x: col * 16, y: row * 16 }),
-          Components.CollidableBox()
-        );
-
-        if (tileKey === Utils.Assets.Sprites.BANANA) {
-          components.push(
-            Components.AI(),
-            Components.Commandable(),
-            Components.Velocity({ maxSpeed: 40 }),
-            Components.DamagesOnCollision({ damage: 1 }),
-            Components.Health({ max: 5 })
-          );
+        if (tileKey === Utils.Assets.Sprites.PIG) {
+          this.addEntity(Templates.pig(x, y));
+        } else {
+          this.addEntity(new Entity().addComponents([
+            Components.Sprite({ key: tileKey }),
+            Components.Position({ x, y }),
+            Components.CollidableBox()
+          ]));
         }
-
-        this.addEntity(new Entity().addComponents(components));
       }
     }
   }

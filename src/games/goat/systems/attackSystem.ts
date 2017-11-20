@@ -1,9 +1,9 @@
 import * as Commands from '../commands';
 import * as Components from '../components';
-import { Entity, EntityMap } from '../entity';
+import * as Templates from '../templates';
+import { EntityMap } from '../entity';
 import { MainState } from '../game';
 import { System } from './systemUtils';
-import { Sprites } from '../utils/assetUtils';
 
 interface Attack {
   timeElapsed: number;
@@ -48,10 +48,7 @@ export default class AttackSystem implements System {
         continue;
       }
 
-      this.attacks[entityId] = {
-        timeElapsed: 0,
-        weapon
-      };
+      this.attacks[entityId] = { timeElapsed: 0, weapon };
 
       const attackAngle = position.angle;
       const attackSpeed = 150;
@@ -65,14 +62,7 @@ export default class AttackSystem implements System {
       const startX = body.center.x + dX * (body.halfHeight + 6);
       const startY = body.center.y + dY * (body.halfHeight + 6);
 
-      this.state.addEntity(new Entity().addComponents([
-        Components.DamagesOnCollision({ damage: weapon.damage }),
-        Components.DestroyedOnCollision(),
-        Components.CollidableBox({ width: 4, height: 4, offsetX: 2, offsetY: 2 }),
-        Components.Sprite({ key: Sprites.BULLET, animations: [{ name: 'walking', frames: [0, 1, 2, 3], frameRate: 15, loop: true, autoPlay: true }] }),
-        Components.Position({ x: startX, y: startY, angle: attackAngle }),
-        Components.Velocity({ x: vX, y: vY })
-      ]));
+      this.state.addEntity(Templates.monkeyBullet(weapon, startX, startY, attackAngle, vX, vY));
     }
   }
 }

@@ -19,6 +19,7 @@ export const Sprites = {
   GRASS: 'grass',
   GROUND1: 'ground1',
   MONKEY: 'monkey',
+  PIG: 'pig'
 };
 
 interface TileConfig {
@@ -42,6 +43,7 @@ const tileMap: { [key: string]: TileConfig } = {
   b: tile(Sprites.BANANA, require('../assets/sprites/tiles/banana.png')),
   s: tile(Sprites.GRASS, require('../assets/sprites/tiles/grass.png')),
   g: tile(Sprites.GROUND1, require('../assets/sprites/tiles/ground1.png')),
+  p: tile(Sprites.PIG, '')
 };
 
 export function getTileConfig(tileKey: string) {

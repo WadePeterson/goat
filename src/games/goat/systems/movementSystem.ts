@@ -65,7 +65,7 @@ export default class MovementSystem implements System {
             sprite.animations.play('walking');
 
             let spriteAngle = position.angle;
-            if (spriteAngle === Math.PI) {
+            if (spriteAngle === Math.PI || (moveToPoint && directionX < 0)) {
               spriteAngle = 0;
               sprite.scale.x = -1;
             } else {
@@ -78,8 +78,23 @@ export default class MovementSystem implements System {
           sprite.animations.stop();
         }
 
-        velocity.x = velocity.maxSpeed * directionX;
-        velocity.y = velocity.maxSpeed * directionY;
+        let vX = velocity.maxSpeed * directionX;
+        let vY = velocity.maxSpeed * directionY;
+
+        if (moveToPoint) {
+          const distanceY = Math.abs(position.y - moveToPoint.y);
+          if (distanceY < Math.abs(vY)) {
+            vY = Math.sign(vY) * distanceY;
+          }
+
+          const distanceX = Math.abs(position.x - moveToPoint.x);
+          if (distanceX < Math.abs(vX)) {
+            vX = Math.sign(vX) * distanceX;
+          }
+        }
+
+        velocity.x = vX;
+        velocity.y = vY;
       }
     }
   }
