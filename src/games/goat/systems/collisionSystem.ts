@@ -27,6 +27,10 @@ export default class CollisionSystem implements System {
     const entity1 = this.state.syncPhysicsForEntity(sprite1.data.entityId, true);
     const entity2 = this.state.syncPhysicsForEntity(sprite2.data.entityId, true);
 
+    if (entity1.getComponent(Components.AI) && entity2.getComponent(Components.AI)) {
+      return;
+    }
+
     const entity1Dead = this.dealDamage(entity2, entity1) || !!entity1.getComponent(Components.DestroyedOnCollision);
     const entity2Dead = this.dealDamage(entity1, entity2) || !!entity2.getComponent(Components.DestroyedOnCollision);
 
