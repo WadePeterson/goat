@@ -8,6 +8,8 @@ const gameConfigs = [
   { key: "goat", title: "G.O.A.T." },
 ];
 
+const devMode = process.env.NODE_ENV !== "production";
+
 const entry = {};
 const htmlPlugins = [];
 
@@ -49,10 +51,9 @@ module.exports = {
       { test: /\.css$/, use: ["style-loader", "css-loader"] },
       {
         test: /(fonts|assets)(\/|\\)/,
-        use:
-          process.env.NODE_ENV === "production"
-            ? "file-loader?name=/assets/[hash].[ext]"
-            : "file-loader?name=assets/[hash].[ext]",
+        use: devMode
+          ? "file-loader?name=assets/[hash].[ext]"
+          : "file-loader?name=/assets/[hash].[ext]",
       },
       { test: /pixi\.js$/, use: "expose-loader?PIXI" },
       { test: /phaser-split\.js$/, use: "expose-loader?Phaser" },
