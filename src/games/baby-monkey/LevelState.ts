@@ -267,6 +267,7 @@ export class LevelState extends Phaser.State {
     const failureTextChoices = [
       'Oh poop',
       'You made baby monkey sad :(',
+      'You done goofed',
       'Nooooooooooooooo!!!',
     ];
     this.pauseLevel(true);

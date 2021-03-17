@@ -40,9 +40,7 @@ module.exports = {
       p2: path.join(__dirname, "node_modules/phaser-ce/build/custom/p2.js"),
     },
   },
-  plugins: [
-    ...htmlPlugins,
-  ],
+  plugins: [...htmlPlugins],
   module: {
     rules: [
       { test: /\.tsx?$/, use: "awesome-typescript-loader" },
@@ -51,7 +49,10 @@ module.exports = {
       { test: /\.css$/, use: ["style-loader", "css-loader"] },
       {
         test: /(fonts|assets)(\/|\\)/,
-        use: "file-loader?name=/assets/[hash].[ext]",
+        use:
+          process.env.NODE_ENV === "production"
+            ? "file-loader?name=/assets/[hash].[ext]"
+            : "file-loader?name=assets/[hash].[ext]",
       },
       { test: /pixi\.js$/, use: "expose-loader?PIXI" },
       { test: /phaser-split\.js$/, use: "expose-loader?Phaser" },
